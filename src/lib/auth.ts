@@ -4,6 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from './prisma';
 import { ensureUserSeeded, DEFAULT_USER_SETTINGS } from './default-data';
+import { accountAdmissionMode, validateAndClaimInvitation } from './invitations';
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -22,6 +23,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
         mode: { label: 'Mode', type: 'text' },
         firstName: { label: 'First Name', type: 'text' },
+        token: { label: 'Invitation Token', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -36,6 +38,13 @@ export const authOptions: NextAuthOptions = {
         if (credentials.mode === 'signup') {
           if (existingUser) {
             throw new Error('An account with this email already exists.');
+          }
+          let matchedInvitation: { id: string } | null = null;
+          if (accountAdmissionMode() === 'invitation-only') {
+            matchedInvitation = await validateAndClaimInvitation({
+              token: credentials.token || '',
+              email,
+            });
           }
           const passwordHash = await bcrypt.hash(credentials.password, 10);
           const prefix = email.split('@')[0].replace(/[^a-z0-9]/gi, '').slice(0, 12) || 'user';
@@ -56,6 +65,19 @@ export const authOptions: NextAuthOptions = {
               settingsJson: JSON.stringify(DEFAULT_USER_SETTINGS),
             },
           });
+
+          if (matchedInvitation) {
+            await prisma.accountInvitation.update({
+              where: { id: matchedInvitation.id },
+              data: {
+                status: 'ACCEPTED',
+                acceptedById: newUser.id,
+                acceptedAt: new Date(),
+                activeForEmail: null,
+                tokenHash: null,
+              },
+            });
+          }
 
           await ensureUserSeeded(prisma, newUser.id, newUser.email);
           return {

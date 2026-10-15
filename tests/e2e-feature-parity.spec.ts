@@ -260,4 +260,90 @@ test.describe('Readwise Reader Full Feature Parity E2E Suite', () => {
     await expect(page.getByText(/Shared with/i)).toBeVisible();
     await expect(page.getByText('Open in My Reader')).toBeVisible();
   });
+
+  test('8. Invite-Only Account Admission (/admin/invitations, /invite/[token], /api/admin/invitations, /api/auth/invitation, /api/auth/register)', async ({
+    page,
+    request,
+  }) => {
+    const invitedEmail = `invited.${Date.now()}@readwise.io`;
+
+    // 1. Uninvited registration without token must fail with 403 invitation_required
+    const uninvitedRes = await request.post('/api/auth/register', {
+      data: {
+        email: invitedEmail,
+        password: 'ReadwisePassword2026!',
+        firstName: 'Invited',
+      },
+    });
+    expect(uninvitedRes.status()).toBe(403);
+    const uninvitedBody = await uninvitedRes.json();
+    expect(uninvitedBody.code).toBe('invitation_required');
+
+    // 2. Admin creates an invitation
+    const createInvRes = await request.post('/api/admin/invitations', {
+      data: { email: invitedEmail },
+    });
+    expect(createInvRes.status()).toBe(201);
+    const createdInv = await createInvRes.json();
+    expect(createdInv.ok).toBe(true);
+    expect(createdInv.token).toBeTruthy();
+
+    // 3. Rotate the invitation token and verify old token is invalidated
+    const rotateRes = await request.post(
+      `/api/admin/invitations/${createdInv.invitation.id}/rotate`,
+      { data: {} }
+    );
+    expect(rotateRes.ok()).toBeTruthy();
+    const rotated = await rotateRes.json();
+    expect(rotated.token).not.toBe(createdInv.token);
+
+    // 4. Inspect active token via /api/auth/invitation
+    const inspectRes = await request.post('/api/auth/invitation', {
+      data: { token: rotated.token },
+    });
+    expect(inspectRes.ok()).toBeTruthy();
+    const inspectData = await inspectRes.json();
+    expect(inspectData.invitation.status).toBe('pending');
+    expect(inspectData.invitation.maskedEmail).toContain('@readwise.io');
+
+    // 5. Visit /invite/[token] UI and /admin/invitations UI
+    await page.goto(`/invite/${rotated.token}`);
+    await expect(page.locator('h1')).toContainText('Accept your invitation');
+    await expect(page.getByText(/This invitation is for/i)).toBeVisible();
+
+    await page.goto('/admin/invitations');
+    await expect(page.locator('h1')).toContainText('Account Invitations (Invite-Only Admission)');
+    await expect(page.getByText(invitedEmail)).toBeVisible();
+
+    // 6. Email mismatch must be rejected with 403
+    const mismatchRes = await request.post('/api/auth/register', {
+      data: {
+        email: 'wrong.person@readwise.io',
+        password: 'ReadwisePassword2026!',
+        token: rotated.token,
+      },
+    });
+    expect(mismatchRes.status()).toBe(403);
+
+    // 7. Registering with matching email + valid invitation token succeeds (201)
+    const acceptRes = await request.post('/api/auth/register', {
+      data: {
+        email: invitedEmail,
+        password: 'ReadwisePassword2026!',
+        firstName: 'NewInvitedReader',
+        token: rotated.token,
+      },
+    });
+    expect(acceptRes.status()).toBe(201);
+
+    // 8. Re-using the claimed token is rejected (410)
+    const reuseRes = await request.post('/api/auth/register', {
+      data: {
+        email: invitedEmail,
+        password: 'ReadwisePassword2026!',
+        token: rotated.token,
+      },
+    });
+    expect(reuseRes.status()).toBe(410);
+  });
 });

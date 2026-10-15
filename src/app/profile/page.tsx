@@ -57,6 +57,24 @@ export default function ProfilePage() {
           </a>
         </div>
 
+        {/* Invite-Only Account Invitations Admin Link */}
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50/50 p-5 dark:border-amber-900/40 dark:bg-amber-950/20">
+          <div>
+            <div className="text-sm font-bold text-gray-900 dark:text-white">
+              Invite-Only Account Admission (`/admin/invitations`)
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              Generate one-time registration links (`/invite/[token]`), rotate active tokens, or revoke pending invitations.
+            </div>
+          </div>
+          <a
+            href="/admin/invitations"
+            className="rounded-xl bg-amber-600 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-500"
+          >
+            Manage Invitations →
+          </a>
+        </div>
+
         {/* Profile Form */}
         <form
           onSubmit={handleSaveProfile}

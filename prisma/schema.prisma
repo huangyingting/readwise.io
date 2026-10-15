@@ -23,6 +23,7 @@ model User {
   onboardedAt         DateTime?
   subscriptionProduct String   @default("trial")
   trialDaysLeft       Int      @default(30)
+  role                String   @default("Admin")
   apiToken            String   @default("rw_live_token_readwise_2026")
   dailyReviewStreak   Int      @default(5)
   lastReviewedAt      DateTime?
@@ -42,6 +43,8 @@ model User {
   ghostreaderThreads  GhostreaderThread[]
   integrations        IntegrationConnection[]
   mutationEvents      StateMutationEvent[]
+  sentInvitations     AccountInvitation[] @relation("InvitedBy")
+  acceptedInvitations AccountInvitation[] @relation("AcceptedBy")
 }
 
 model Account {
@@ -277,3 +280,28 @@ model StateMutationEvent {
 
   @@index([userId, timestamp])
 }
+
+model AccountInvitation {
+  id              String    @id @default(cuid())
+  email           String
+  normalizedEmail String
+  activeForEmail  String?   @unique
+  tokenHash       String?   @unique
+  status          String    @default("PENDING") // PENDING | ACCEPTED | REVOKED | EXPIRED
+  invitedById     String?
+  acceptedById    String?
+  expiresAt       DateTime
+  acceptedAt      DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  invitedBy       User?     @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
+  acceptedBy      User?     @relation("AcceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@index([status, expiresAt])
+  @@index([normalizedEmail, createdAt])
+  @@index([invitedById])
+  @@index([acceptedById])
+}
+

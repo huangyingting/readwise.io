@@ -13,6 +13,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [inviteToken, setInviteToken] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -42,6 +43,7 @@ export default function SignupPage() {
           password,
           firstName: firstName.trim() || email.split('@')[0],
           lastName: lastName.trim(),
+          token: inviteToken.trim(),
         }),
       });
       const regData = await regRes.json();
@@ -94,6 +96,10 @@ export default function SignupPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="rounded-2xl border border-gray-200 bg-white px-8 py-8 shadow-sm dark:border-gray-800 dark:bg-[#131722]">
+          <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+            <strong>Invitation-Only Registration:</strong> Readwise is currently invitation-only. Use the personal invitation link (<code>/invite/&lt;token&gt;</code>) sent by an administrator, or paste your invitation token below.
+          </div>
+
           {error && (
             <div
               role="alert"
@@ -105,6 +111,19 @@ export default function SignupPage() {
           )}
 
           <form onSubmit={handleSignup} className="space-y-4" noValidate>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                Invitation Token or Link *
+              </label>
+              <input
+                name="inviteToken"
+                type="text"
+                value={inviteToken}
+                onChange={(e) => setInviteToken(e.target.value)}
+                placeholder="Paste invitation token or /invite/... link"
+                className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2 font-mono text-xs text-gray-900 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">

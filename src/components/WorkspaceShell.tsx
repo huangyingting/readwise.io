@@ -443,6 +443,13 @@ function WorkspaceShellInner({
                   <Mail className="h-3.5 w-3.5" /> Email to Library / Feed
                 </Link>
                 <Link
+                  href="/admin/invitations"
+                  onClick={() => setAccountOpen(false)}
+                  className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  <User className="h-3.5 w-3.5 text-amber-500" /> Admin Invitations
+                </Link>
+                <Link
                   href="/resources"
                   onClick={() => setAccountOpen(false)}
                   className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800"

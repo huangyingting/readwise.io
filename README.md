@@ -48,12 +48,12 @@ npm run start
 
 ---
 
-## Implemented Feature Parity Matrix (All 45 Routes — Readwise.io + Readwise Reader)
+## Implemented Feature Parity Matrix (All 51 Routes — Readwise.io + Readwise Reader)
 
 | Subsystem | Routes | Implemented Capabilities |
 |---|---|---|
 | **Public, Marketing & Shared Docs** | `/read`, `/pricing`, `/share/[id]` | Hero landing page, multi-format feature breakdown, Readwise Full vs. Lite pricing comparison, and **Public Annotated Document Share pages (`/share/[id]`)** |
-| **Authentication (NextAuth)** | `/accounts/login`, `/accounts/signup`, `/accounts/password/reset`, `/api/auth/[...nextauth]`, `/api/auth/register` | Credentials authentication, 1-Click Demo Login, new user registration with automatic library seeding, password reset flow |
+| **Invite-Only Account Admission & Auth (NextAuth)** | `/accounts/login`, `/accounts/signup`, `/accounts/password/reset`, `/invite/[token]`, `/admin/invitations`, `/api/auth/[...nextauth]`, `/api/auth/register`, `/api/auth/invitation`, `/api/admin/invitations`, `/api/admin/invitations/[id]`, `/api/admin/invitations/[id]/rotate` | **Invite-Only Account Registration** (`ACCOUNT_ADMISSION_MODE=invitation-only` by default), SHA-256 hashed one-time opaque invitation tokens (`AccountInvitation`), Admin Invitations Console (`/admin/invitations` to issue, copy, rotate, and revoke links), personal invitation acceptance (`/invite/[token]`), 1-Click Demo Login, and new user library seeding |
 | **4-Step Onboarding Wizard** | `/welcome` | Interactive 4-step wizard: Profile, Library Triage Philosophy (`inbox-later-archive` / `shortlist` / `simple`), Integrations connect, and Browser Extension install |
 | **Readwise Spaced Repetition & Highlights (`readwise.io`)** | `/daily-review`, `/highlights`, `/books`, `/mastery` | **SM-2 Spaced Repetition Daily Review** (`Never`, `Soon`, `Later`, `Eventually` intervals, streak counter, Highlight / Q&A Flashcard / `{{c1::Cloze}}` modes), **All Highlights & Visual Quote Studio** (Action Tags `.h1`/`.c1`/`.qa`, SVG Quote Card generator, **Kindle `My Clippings.txt` & CSV importer**), **Books & Supplemental Highlights Catalog** (per-book review frequency tuner + 1-click curated Supplemental Books), and **Active Recall Mastery Deck** |
 | **Production Scraping & Binary File Ingestion** | `src/lib/ingestion-engine.ts`, `/api/reader/state/update` | Real live URL HTML readability scraper, YouTube oEmbed + timed caption extractor, pure-Node `.epub` ZIP (`zlib.inflateRawSync`) chapter parser, `.pdf` `FlateDecode` stream text extractor, live RSS/Atom XML feed fetcher, and OPML feed importer |
