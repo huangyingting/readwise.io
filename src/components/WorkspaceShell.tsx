@@ -263,6 +263,58 @@ function WorkspaceShellInner({
               </Link>
             </nav>
 
+            {/* Readwise Spaced Repetition & Highlights */}
+            <div className="mt-4 pt-3 border-t border-gray-200/80 dark:border-gray-800">
+              <div className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+                Readwise Review
+              </div>
+              <div className="space-y-0.5 text-xs font-medium">
+                <Link
+                  href="/daily-review"
+                  className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 transition ${
+                    pathname === '/daily-review'
+                      ? 'bg-amber-500/15 font-semibold text-amber-600 dark:text-amber-400'
+                      : 'text-gray-700 hover:bg-gray-200/60 dark:text-gray-300 dark:hover:bg-gray-800/60'
+                  }`}
+                >
+                  <span>🔥 Daily Review</span>
+                  <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                    {user?.dailyReviewStreak || 5}d
+                  </span>
+                </Link>
+                <Link
+                  href="/highlights"
+                  className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 transition ${
+                    pathname === '/highlights'
+                      ? 'bg-blue-600/10 font-semibold text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 hover:bg-gray-200/60 dark:text-gray-300 dark:hover:bg-gray-800/60'
+                  }`}
+                >
+                  <span>✨ All Highlights</span>
+                </Link>
+                <Link
+                  href="/books"
+                  className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 transition ${
+                    pathname === '/books'
+                      ? 'bg-blue-600/10 font-semibold text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 hover:bg-gray-200/60 dark:text-gray-300 dark:hover:bg-gray-800/60'
+                  }`}
+                >
+                  <span>📚 Books &amp; Sources</span>
+                </Link>
+                <Link
+                  href="/mastery"
+                  className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 transition ${
+                    pathname === '/mastery'
+                      ? 'bg-blue-600/10 font-semibold text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 hover:bg-gray-200/60 dark:text-gray-300 dark:hover:bg-gray-800/60'
+                  }`}
+                >
+                  <span>🎴 Flashcard Mastery</span>
+                </Link>
+              </div>
+            </div>
+
             {/* Pinned Filtered Views */}
             <div className="mt-5">
               <div className="flex items-center justify-between px-2.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">

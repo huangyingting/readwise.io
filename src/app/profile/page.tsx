@@ -150,6 +150,67 @@ export default function ProfilePage() {
             </button>
           </div>
         </form>
+
+        {/* Readwise Official REST API v2/v3 Token & Obsidian Vault Export */}
+        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-[#141821]">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-base font-bold text-gray-900 dark:text-white">
+                Readwise API Access Token (v2 &amp; v3)
+              </h2>
+              <p className="text-xs text-gray-500">
+                Authenticate Obsidian, Logseq, Notion, Raycast, or custom scripts using{' '}
+                <code>Authorization: Token &lt;your_token&gt;</code>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                mutateState('regenerate-api-token', {}, 'Generated new Readwise API token')
+              }
+              className="rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-semibold hover:bg-gray-50 dark:border-gray-700"
+            >
+              Regenerate Token
+            </button>
+          </div>
+
+          <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 font-mono text-xs text-blue-600 dark:border-gray-800 dark:bg-gray-900 dark:text-blue-400">
+            {user?.apiToken || 'rw_live_alex_rivera_token'}
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-1 text-xs">
+            <a
+              href="/api/v2/export?format=obsidian"
+              className="rounded-xl bg-indigo-600 px-3.5 py-2 font-semibold text-white hover:bg-indigo-500"
+            >
+              Download Obsidian Vault (.md)
+            </a>
+            <a
+              href="/api/v2/highlights"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-xl border border-gray-200 px-3 py-2 font-semibold hover:bg-gray-50 dark:border-gray-700"
+            >
+              GET /api/v2/highlights ↗
+            </a>
+            <a
+              href="/api/v2/books"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-xl border border-gray-200 px-3 py-2 font-semibold hover:bg-gray-50 dark:border-gray-700"
+            >
+              GET /api/v2/books ↗
+            </a>
+            <a
+              href="/api/v3/list"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-xl border border-gray-200 px-3 py-2 font-semibold hover:bg-gray-50 dark:border-gray-700"
+            >
+              GET /api/v3/list ↗
+            </a>
+          </div>
+        </div>
       </div>
     </WorkspaceShell>
   );

@@ -8,7 +8,15 @@ import {
   DEFAULT_SHORTCUTS,
   DEFAULT_USER_SETTINGS,
   SUGGESTED_FEEDS,
+  SUPPLEMENTAL_BOOKS_CATALOG,
 } from '@/lib/default-data';
+import {
+  extractUrlDocument,
+  fetchAndParseRssFeed,
+  parseHighlightsImport,
+  parseOpmlFeeds,
+  parseUploadedFile,
+} from '@/lib/ingestion-engine';
 
 function safeParseJson<T>(raw: string | null | undefined, fallback: T): T {
   if (!raw) return fallback;
@@ -166,89 +174,33 @@ export async function POST(req: NextRequest) {
 
       case 'add-document-url': {
         const { url, title, category: explicitCategory, tags = [] } = payload;
-        const cleanUrl = (url || 'https://example.com/article').trim();
-        let domain = 'web.app';
-        try {
-          domain = new URL(cleanUrl).hostname.replace(/^www\./, '');
-        } catch {}
-
-        const isYoutube = cleanUrl.includes('youtube.com') || cleanUrl.includes('youtu.be');
-        const isPdf = cleanUrl.toLowerCase().endsWith('.pdf');
-        const isEpub = cleanUrl.toLowerCase().endsWith('.epub');
-        const isTweet = cleanUrl.includes('twitter.com') || cleanUrl.includes('x.com');
-
-        const category =
-          explicitCategory ||
-          (isYoutube ? 'video' : isPdf ? 'pdf' : isEpub ? 'epub' : isTweet ? 'tweet' : 'article');
-
-        let youtubeVideoId = 'eJBtvfbcic0';
-        if (isYoutube) {
-          const m = cleanUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
-          if (m) youtubeVideoId = m[1];
-        }
-
-        const derivedTitle =
-          title?.trim() ||
-          (isYoutube
-            ? `YouTube Video (${youtubeVideoId}): Deep Dive & Transcript`
-            : isPdf
-            ? `PDF Research Paper from ${domain}`
-            : `Saved Article from ${domain}: ${cleanUrl.split('/').filter(Boolean).pop() || 'Overview'}`);
+        const extracted = await extractUrlDocument(url || 'https://example.com/article', title);
 
         const created = await prisma.document.create({
           data: {
             userId: user.id,
-            url: cleanUrl,
-            title: derivedTitle,
-            author: domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1),
-            source: 'web clipper',
-            siteName: domain,
-            domain,
-            faviconUrl: `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
-            category,
+            url: extracted.url,
+            title: extracted.title,
+            author: extracted.author,
+            source: extracted.source,
+            siteName: extracted.siteName,
+            domain: extracted.domain,
+            faviconUrl: extracted.faviconUrl,
+            imageUrl: extracted.imageUrl,
+            category: explicitCategory || extracted.category,
             triageStatus: 'new',
-            wordCount: 1240,
-            readingMinutes: 5,
+            wordCount: extracted.wordCount,
+            readingMinutes: extracted.readingMinutes,
             readingProgress: 0,
             tagsJson: JSON.stringify(tags),
-            summary: `Saved from ${cleanUrl}. Ready for keyboard-driven reading, highlighting (h), margin notes (n), and Ghostreader AI synthesis (Shift+G).`,
-            generatedSummary: `Ghostreader auto-summary for "${derivedTitle}": This document explores core concepts from ${domain}, formatted for distraction-free reading and structured annotation in Readwise Reader.`,
-            publishedDate: new Date(),
+            summary: extracted.summary,
+            generatedSummary: extracted.generatedSummary,
+            publishedDate: extracted.publishedDate,
             savedAt: new Date(),
-            sourceSpecificJson: isYoutube
-              ? JSON.stringify({ youtubeVideoId, durationSeconds: 300 })
-              : isPdf
-              ? JSON.stringify({
-                  pdfPageCount: 2,
-                  pages: [
-                    {
-                      pageNumber: 1,
-                      title: 'Page 1 — Executive Summary',
-                      heading: derivedTitle,
-                      authors: domain,
-                      paragraphs: [
-                        `Imported PDF document from ${cleanUrl}. Use the toolbar above to switch between PDF Canvas view, Enhanced Text reflow mode, and Rectangular Area Snapshot highlighting.`,
-                        'Every highlight or region snapshot you capture is automatically synced into your right-hand Notebook panel.',
-                      ],
-                      diagramCaption: 'Figure 1: Document Structure & Annotation Pipeline',
-                    },
-                  ],
-                })
-              : '{}',
-            transcriptJson: isYoutube
-              ? JSON.stringify([
-                  { start: 0, duration: 15, text: `Welcome to this video from ${domain}. Click any sentence in the synchronized transcript to jump the video player to that timestamp.` },
-                  { start: 15, duration: 18, text: 'Press H on any focused transcript paragraph to highlight it and save the timestamped quote to your Notebook.' },
-                  { start: 33, duration: 20, text: 'Use Shift+G to ask Ghostreader questions grounded in the full video transcript.' },
-                ])
-              : '[]',
-            htmlContent: `
-              <h2 id="sec-intro">1. Overview & Context</h2>
-              <p data-paragraph-index="0">This document was saved from <code>${cleanUrl}</code> into your Readwise Reader Inbox. Use <code>j</code> and <code>k</code> to move focus between paragraphs.</p>
-              <h2 id="sec-core">2. Core Insights & Analysis</h2>
-              <p data-paragraph-index="1">Press <code>h</code> to highlight any key passage, <code>n</code> to attach an inline margin note, or select any phrase to invoke Ghostreader AI definitions and simplifications.</p>
-              <p data-paragraph-index="2">When finished, press <code>e</code> to Archive or <code>l</code> to move to Later.</p>
-            `,
+            sourceSpecificJson: extracted.sourceSpecificJson,
+            transcriptJson: extracted.transcriptJson,
+            ttsJson: extracted.ttsJson,
+            htmlContent: extracted.htmlContent,
           },
         });
 
@@ -257,74 +209,137 @@ export async function POST(req: NextRequest) {
       }
 
       case 'upload-document-file': {
-        const { filename, contentPreview, fileType } = payload;
+        const { filename, contentPreview, fileType, base64Data, textContent } = payload;
         const name = filename || 'Uploaded-Document.pdf';
         const lower = name.toLowerCase();
-        const category =
-          fileType || (lower.endsWith('.epub') ? 'epub' : lower.endsWith('.pdf') ? 'pdf' : 'article');
-        const cleanTitle = name.replace(/\.(pdf|epub|html|txt|md)$/i, '').replace(/[-_]+/g, ' ');
+
+        // 1. Handle OPML Feed Subscription Upload
+        if (lower.endsWith('.opml') || lower.endsWith('.xml')) {
+          const xmlStr =
+            textContent ||
+            (base64Data
+              ? Buffer.from(base64Data.replace(/^data:[^;]+;base64,/, ''), 'base64').toString('utf8')
+              : '') ||
+            contentPreview ||
+            '';
+          const opmlFeeds = parseOpmlFeeds(xmlStr);
+          const importedFeeds = [];
+          for (const f of opmlFeeds.slice(0, 15)) {
+            const feed = await prisma.rssFeed.upsert({
+              where: { userId_url: { userId: user.id, url: f.url } },
+              update: { title: f.title, folder: f.folder },
+              create: {
+                userId: user.id,
+                title: f.title,
+                url: f.url,
+                siteUrl: f.siteUrl,
+                folder: f.folder,
+                description: `Imported from OPML (${name})`,
+                lastFetchedAt: new Date(),
+              },
+            });
+            importedFeeds.push(feed);
+          }
+          resultData.importedFeedsCount = importedFeeds.length;
+          break;
+        }
+
+        // 2. Handle Kindle "My Clippings.txt" or Readwise CSV Highlights Upload
+        if (
+          lower.includes('clippings') ||
+          lower.endsWith('.csv') ||
+          (textContent && textContent.includes('=========='))
+        ) {
+          const rawStr =
+            textContent ||
+            (base64Data
+              ? Buffer.from(base64Data.replace(/^data:[^;]+;base64,/, ''), 'base64').toString('utf8')
+              : '') ||
+            contentPreview ||
+            '';
+          const importedBooks = parseHighlightsImport(name, rawStr);
+          let createdHighlights = 0;
+          let lastDoc: any = null;
+          for (const book of importedBooks) {
+            const htmlParas = book.highlights
+              .map(
+                (h, idx) =>
+                  `<p data-paragraph-index="${idx}">${h.text.replace(/</g, '&lt;')}</p>`
+              )
+              .join('\n');
+            const doc = await prisma.document.create({
+              data: {
+                userId: user.id,
+                url: `kindle://${encodeURIComponent(book.title)}`,
+                title: book.title,
+                author: book.author,
+                source: lower.endsWith('.csv') ? 'csv import' : 'kindle',
+                siteName: 'Kindle Highlights',
+                domain: 'kindle.amazon.com',
+                category: book.category,
+                triageStatus: 'archive',
+                wordCount: Math.max(100, book.highlights.map((x) => x.text).join(' ').split(/\s+/).length),
+                readingMinutes: Math.max(1, book.highlights.length),
+                readingProgress: 100,
+                summary: book.highlights[0]?.text || `Imported ${book.highlights.length} highlights`,
+                generatedSummary: `Imported ${book.highlights.length} highlights from ${book.title} by ${book.author}.`,
+                htmlContent: `<h2 id="sec-1">${book.title} — Highlights</h2>\n${htmlParas}`,
+              },
+            });
+            lastDoc = doc;
+            for (let i = 0; i < book.highlights.length; i++) {
+              const hl = book.highlights[i];
+              await prisma.annotation.create({
+                data: {
+                  userId: user.id,
+                  documentId: doc.id,
+                  type: 'highlight',
+                  paragraphIndex: i,
+                  selectedText: hl.text,
+                  note: hl.note,
+                  color: 'yellow',
+                  tagsJson: JSON.stringify(hl.tags),
+                },
+              });
+              createdHighlights++;
+            }
+          }
+          resultData.document = lastDoc;
+          resultData.importedHighlightsCount = createdHighlights;
+          break;
+        }
+
+        // 3. Handle PDF, EPUB, HTML, Markdown, TXT file upload with real binary/text extraction
+        const parsed = parseUploadedFile({
+          filename: name,
+          fileType,
+          base64Data,
+          textContent,
+          contentPreview,
+        });
 
         const created = await prisma.document.create({
           data: {
             userId: user.id,
-            url: `file://${name}`,
-            title: cleanTitle,
-            author: 'Uploaded File',
-            source: 'upload',
-            siteName: category.toUpperCase() + ' Upload',
-            domain: 'local.upload',
-            category,
+            url: parsed.url,
+            title: parsed.title,
+            author: parsed.author,
+            source: parsed.source,
+            siteName: parsed.siteName,
+            domain: parsed.domain,
+            category: parsed.category,
             triageStatus: 'new',
-            wordCount: 2450,
-            readingMinutes: 10,
+            wordCount: parsed.wordCount,
+            readingMinutes: parsed.readingMinutes,
             readingProgress: 0,
             tagsJson: JSON.stringify([]),
-            summary: contentPreview || `Uploaded ${category.toUpperCase()} file (${name}). Supports full highlighting, margin notes, and Ghostreader AI.`,
-            generatedSummary: `Uploaded ${category.toUpperCase()} document "${cleanTitle}". Parsed for multi-format reading, table of contents navigation, and Notebook Markdown export.`,
-            publishedDate: new Date(),
+            summary: parsed.summary,
+            generatedSummary: parsed.generatedSummary,
+            publishedDate: parsed.publishedDate,
             savedAt: new Date(),
-            sourceSpecificJson:
-              category === 'pdf'
-                ? JSON.stringify({
-                    pdfPageCount: 2,
-                    pages: [
-                      {
-                        pageNumber: 1,
-                        title: `Page 1 — ${cleanTitle}`,
-                        heading: cleanTitle,
-                        authors: 'Uploaded PDF Document',
-                        paragraphs: [
-                          contentPreview || `Primary text extracted from ${name}. You can highlight text directly, switch to Enhanced Text View, or use the Area Snapshot tool to crop diagrams into your Notebook.`,
-                          'All annotations are stored locally and synchronized via RFC 6902 JSON Patch events.',
-                        ],
-                        diagramCaption: `Figure 1: Visual diagram in ${name}`,
-                      },
-                      {
-                        pageNumber: 2,
-                        title: `Page 2 — Detailed Analysis`,
-                        heading: 'Section 2: Architecture & Findings',
-                        authors: name,
-                        paragraphs: [
-                          'Second page of the uploaded PDF document demonstrating multi-page navigation, zoom controls, and area snapshot annotations.',
-                        ],
-                        diagramCaption: 'Table 1: Key Metrics & Evaluation Summary',
-                      },
-                    ],
-                  })
-                : category === 'epub'
-                ? JSON.stringify({
-                    chapters: [
-                      { id: 'up-ch-1', title: 'Chapter 1: Introduction' },
-                      { id: 'up-ch-2', title: 'Chapter 2: Deep Dive' },
-                    ],
-                  })
-                : '{}',
-            htmlContent: `
-              <h2 id="up-ch-1">Chapter 1: Introduction to ${cleanTitle}</h2>
-              <p data-paragraph-index="0">${contentPreview || `This ${category.toUpperCase()} document (${name}) was uploaded directly to your Readwise Reader library.`}</p>
-              <h2 id="up-ch-2">Chapter 2: Deep Dive & Notes</h2>
-              <p data-paragraph-index="1">Navigate paragraphs with <code>j</code> / <code>k</code>, press <code>h</code> to highlight, or press <code>n</code> to add an inline margin note.</p>
-            `,
+            sourceSpecificJson: parsed.sourceSpecificJson,
+            ttsJson: parsed.ttsJson,
+            htmlContent: parsed.htmlContent,
           },
         });
 
@@ -577,61 +592,366 @@ export async function POST(req: NextRequest) {
         if (!cleanUrl) break;
 
         const suggestedMatch = SUGGESTED_FEEDS.find(
-          (sf) => sf.url.toLowerCase() === cleanUrl.toLowerCase() || sf.siteUrl.toLowerCase() === cleanUrl.toLowerCase()
+          (sf) =>
+            sf.url.toLowerCase() === cleanUrl.toLowerCase() ||
+            sf.siteUrl.toLowerCase() === cleanUrl.toLowerCase()
+        );
+
+        const parsedFeed = await fetchAndParseRssFeed(
+          cleanUrl,
+          suggestedMatch?.title || title
         );
 
         let domain = 'rss.feed';
         try {
-          domain = new URL(cleanUrl).hostname.replace(/^www\./, '');
+          domain = new URL(parsedFeed.siteUrl || cleanUrl).hostname.replace(/^www\./, '');
         } catch {}
 
-        const feedTitle = suggestedMatch?.title || title || `${domain} RSS Feed`;
         const feed = await prisma.rssFeed.upsert({
           where: { userId_url: { userId: user.id, url: cleanUrl } },
           update: { isMuted: false, lastFetchedAt: new Date() },
           create: {
             userId: user.id,
-            title: feedTitle,
+            title: suggestedMatch?.title || parsedFeed.title,
             url: cleanUrl,
-            siteUrl: suggestedMatch?.siteUrl || `https://${domain}`,
-            faviconUrl: suggestedMatch?.faviconUrl || `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
-            description: suggestedMatch?.description || description || `Subscribed RSS feed from ${domain}`,
+            siteUrl: suggestedMatch?.siteUrl || parsedFeed.siteUrl,
+            faviconUrl: suggestedMatch?.faviconUrl || parsedFeed.faviconUrl,
+            description: suggestedMatch?.description || description || parsedFeed.description,
             folder: suggestedMatch?.folder || folder,
             subscriberCount: suggestedMatch?.subscriberCount || 450,
             lastFetchedAt: new Date(),
           },
         });
 
-        // Also create a sample unseen feed article from this newly subscribed feed
-        await prisma.document.create({
+        // Ingest up to 3 real articles from the parsed RSS feed
+        for (const item of parsedFeed.items.slice(0, 3)) {
+          const existing = await prisma.document.findFirst({
+            where: { userId: user.id, url: item.url },
+          });
+          if (!existing) {
+            await prisma.document.create({
+              data: {
+                userId: user.id,
+                url: item.url,
+                title: item.title,
+                author: item.author || feed.title,
+                source: feed.title,
+                siteName: feed.title,
+                domain,
+                faviconUrl: feed.faviconUrl,
+                category: 'article',
+                triageStatus: 'feed',
+                inFeed: true,
+                isSeen: false,
+                wordCount: item.wordCount,
+                readingMinutes: item.readingMinutes,
+                summary: item.summary,
+                generatedSummary: `${feed.title}: ${item.summary}`,
+                publishedDate: item.publishedDate,
+                savedAt: new Date(),
+                htmlContent: item.htmlContent,
+              },
+            });
+          }
+        }
+
+        resultData.feed = feed;
+        break;
+      }
+
+      case 'refresh-feeds': {
+        const feeds = await prisma.rssFeed.findMany({
+          where: { userId: user.id, isMuted: false },
+        });
+        let addedCount = 0;
+        for (const feed of feeds.slice(0, 5)) {
+          const parsedFeed = await fetchAndParseRssFeed(feed.url, feed.title);
+          await prisma.rssFeed.update({
+            where: { id: feed.id },
+            data: { lastFetchedAt: new Date() },
+          });
+          let domain = 'rss.feed';
+          try {
+            domain = new URL(feed.siteUrl || feed.url).hostname.replace(/^www\./, '');
+          } catch {}
+          for (const item of parsedFeed.items.slice(0, 3)) {
+            const existing = await prisma.document.findFirst({
+              where: { userId: user.id, title: item.title },
+            });
+            if (!existing) {
+              await prisma.document.create({
+                data: {
+                  userId: user.id,
+                  url: item.url,
+                  title: item.title,
+                  author: item.author || feed.title,
+                  source: feed.title,
+                  siteName: feed.title,
+                  domain,
+                  faviconUrl: feed.faviconUrl,
+                  category: 'article',
+                  triageStatus: 'feed',
+                  inFeed: true,
+                  isSeen: false,
+                  wordCount: item.wordCount,
+                  readingMinutes: item.readingMinutes,
+                  summary: item.summary,
+                  generatedSummary: `${feed.title}: ${item.summary}`,
+                  publishedDate: item.publishedDate,
+                  savedAt: new Date(),
+                  htmlContent: item.htmlContent,
+                },
+              });
+              addedCount++;
+            }
+          }
+        }
+        resultData.addedCount = addedCount;
+        break;
+      }
+
+      case 'review-annotation': {
+        const { annotationId, rating } = payload;
+        const ann = await prisma.annotation.findFirst({
+          where: { id: annotationId, userId: user.id },
+        });
+        if (!ann) break;
+
+        let intervalDays = ann.intervalDays || 1;
+        let easeFactor = ann.easeFactor || 2.5;
+        let isDiscarded = ann.isDiscarded;
+
+        if (rating === 'never' || rating === 'discard') {
+          isDiscarded = true;
+        } else if (rating === 'soon' || rating === 'again') {
+          intervalDays = 1;
+          easeFactor = Math.max(1.3, easeFactor - 0.2);
+          isDiscarded = false;
+        } else if (rating === 'later' || rating === 'hard') {
+          intervalDays = Math.max(3, Math.round(intervalDays * 1.5));
+          easeFactor = Math.max(1.3, easeFactor - 0.1);
+          isDiscarded = false;
+        } else if (rating === 'eventually' || rating === 'good') {
+          intervalDays = Math.max(7, Math.round(intervalDays * easeFactor));
+          isDiscarded = false;
+        } else if (rating === 'easy') {
+          intervalDays = Math.max(14, Math.round(intervalDays * easeFactor * 1.3));
+          easeFactor = Math.min(3.2, easeFactor + 0.15);
+          isDiscarded = false;
+        }
+
+        const nextReviewAt = new Date(Date.now() + intervalDays * 86400000);
+        const updatedAnn = await prisma.annotation.update({
+          where: { id: ann.id },
           data: {
-            userId: user.id,
-            url: `${cleanUrl}#latest-${Date.now()}`,
-            title: `Latest Dispatch from ${feedTitle}: Designing Resilient Systems`,
-            author: feedTitle,
-            source: feedTitle,
-            siteName: feedTitle,
-            domain,
-            faviconUrl: feed.faviconUrl,
-            category: 'article',
-            triageStatus: 'feed',
-            inFeed: true,
-            isSeen: false,
-            wordCount: 1100,
-            readingMinutes: 5,
-            summary: `Automatically ingested from ${feedTitle} (${cleanUrl}) into your Unseen Feed stream.`,
-            generatedSummary: `Latest RSS post from ${feedTitle} discussing practical system architecture, reading workflows, and high-signal synthesis.`,
-            publishedDate: new Date(),
-            savedAt: new Date(),
-            htmlContent: `
-              <h2>Latest Dispatch from ${feedTitle}</h2>
-              <p data-paragraph-index="0">This article was automatically ingested from your RSS subscription to <strong>${feedTitle}</strong> (<code>${cleanUrl}</code>).</p>
-              <p data-paragraph-index="1">Press <code>l</code> to promote this feed item to your Library Later queue, or <code>e</code> to Archive it.</p>
-            `,
+            reviewCount: (ann.reviewCount || 0) + 1,
+            intervalDays,
+            easeFactor,
+            isDiscarded,
+            lastReviewedAt: new Date(),
+            nextReviewAt,
           },
         });
 
-        resultData.feed = feed;
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            lastReviewedAt: new Date(),
+          },
+        });
+
+        resultData.annotation = updatedAnn;
+        break;
+      }
+
+      case 'complete-daily-review': {
+        const updatedUser = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            dailyReviewStreak: (user.dailyReviewStreak || 1) + 1,
+            lastReviewedAt: new Date(),
+          },
+        });
+        resultData.user = updatedUser;
+        break;
+      }
+
+      case 'toggle-favorite-annotation': {
+        const { annotationId } = payload;
+        const ann = await prisma.annotation.findFirst({
+          where: { id: annotationId, userId: user.id },
+        });
+        if (ann) {
+          const updated = await prisma.annotation.update({
+            where: { id: ann.id },
+            data: { isFavorite: !ann.isFavorite },
+          });
+          resultData.annotation = updated;
+        }
+        break;
+      }
+
+      case 'update-flashcard': {
+        const { annotationId, flashcardQuestion, flashcardAnswer, clozeText, selectedText, note } =
+          payload;
+        const data: any = {};
+        if (flashcardQuestion !== undefined) data.flashcardQuestion = flashcardQuestion;
+        if (flashcardAnswer !== undefined) data.flashcardAnswer = flashcardAnswer;
+        if (clozeText !== undefined) data.clozeText = clozeText;
+        if (selectedText !== undefined) data.selectedText = selectedText;
+        if (note !== undefined) data.note = note;
+
+        const updated = await prisma.annotation.update({
+          where: { id: annotationId },
+          data,
+        });
+        resultData.annotation = updated;
+        break;
+      }
+
+      case 'toggle-public-share': {
+        const { documentId, isPublic } = payload;
+        const doc = await prisma.document.findFirst({
+          where: { id: documentId, userId: user.id },
+        });
+        if (doc) {
+          const updated = await prisma.document.update({
+            where: { id: doc.id },
+            data: { isPublic: isPublic !== undefined ? Boolean(isPublic) : !doc.isPublic },
+          });
+          resultData.document = updated;
+        }
+        break;
+      }
+
+      case 'update-review-frequency': {
+        const { documentId, reviewFrequency } = payload;
+        const updated = await prisma.document.update({
+          where: { id: documentId },
+          data: { reviewFrequency: reviewFrequency || 'normal' },
+        });
+        resultData.document = updated;
+        break;
+      }
+
+      case 'add-supplemental-book': {
+        const { bookKey } = payload;
+        const item = SUPPLEMENTAL_BOOKS_CATALOG.find((b) => b.key === bookKey);
+        if (item) {
+          const htmlParas = item.highlights
+            .map(
+              (h, idx) =>
+                `<p data-paragraph-index="${idx}">${h.text.replace(/</g, '&lt;')}</p>`
+            )
+            .join('\n');
+          const doc = await prisma.document.create({
+            data: {
+              userId: user.id,
+              url: `supplemental://${item.key}`,
+              title: item.title,
+              author: item.author,
+              source: 'supplemental',
+              siteName: 'Readwise Supplemental',
+              domain: 'readwise.io',
+              imageUrl: item.imageUrl,
+              category: item.category,
+              triageStatus: 'archive',
+              isSupplemental: true,
+              reviewFrequency: 'more',
+              wordCount: 450,
+              readingMinutes: 3,
+              readingProgress: 100,
+              summary: item.highlights[0]?.text || item.title,
+              generatedSummary: `Supplemental book highlights for ${item.title} by ${item.author}.`,
+              htmlContent: `<h2 id="sec-1">${item.title} — Supplemental Highlights</h2>\n${htmlParas}`,
+            },
+          });
+
+          for (let i = 0; i < item.highlights.length; i++) {
+            const hl = item.highlights[i];
+            await prisma.annotation.create({
+              data: {
+                userId: user.id,
+                documentId: doc.id,
+                type: 'highlight',
+                paragraphIndex: i,
+                selectedText: hl.text,
+                note: hl.note,
+                color: 'yellow',
+                isFavorite: i === 0,
+                flashcardQuestion: hl.question || '',
+                flashcardAnswer: hl.answer || '',
+                clozeText: hl.cloze || '',
+                tagsJson: JSON.stringify(['supplemental']),
+              },
+            });
+          }
+          resultData.document = doc;
+        }
+        break;
+      }
+
+      case 'import-highlights-text': {
+        const { filename = 'My Clippings.txt', textContent = '' } = payload;
+        const importedBooks = parseHighlightsImport(filename, textContent);
+        let createdHighlights = 0;
+        for (const book of importedBooks) {
+          const htmlParas = book.highlights
+            .map(
+              (h, idx) =>
+                `<p data-paragraph-index="${idx}">${h.text.replace(/</g, '&lt;')}</p>`
+            )
+            .join('\n');
+          const doc = await prisma.document.create({
+            data: {
+              userId: user.id,
+              url: `kindle://${encodeURIComponent(book.title)}`,
+              title: book.title,
+              author: book.author,
+              source: 'kindle',
+              siteName: 'Kindle Highlights',
+              domain: 'kindle.amazon.com',
+              category: book.category,
+              triageStatus: 'archive',
+              wordCount: 300,
+              readingMinutes: 2,
+              readingProgress: 100,
+              summary: book.highlights[0]?.text || book.title,
+              generatedSummary: `Imported ${book.highlights.length} highlights from ${book.title}.`,
+              htmlContent: `<h2 id="sec-1">${book.title}</h2>\n${htmlParas}`,
+            },
+          });
+          for (let i = 0; i < book.highlights.length; i++) {
+            const hl = book.highlights[i];
+            await prisma.annotation.create({
+              data: {
+                userId: user.id,
+                documentId: doc.id,
+                type: 'highlight',
+                paragraphIndex: i,
+                selectedText: hl.text,
+                note: hl.note,
+                color: 'yellow',
+                tagsJson: JSON.stringify(hl.tags),
+              },
+            });
+            createdHighlights++;
+          }
+        }
+        resultData.importedHighlightsCount = createdHighlights;
+        break;
+      }
+
+      case 'regenerate-api-token': {
+        const randomHex = Array.from({ length: 24 }, () =>
+          Math.floor(Math.random() * 16).toString(16)
+        ).join('');
+        const newToken = `rw_live_${randomHex}`;
+        const updatedUser = await prisma.user.update({
+          where: { id: user.id },
+          data: { apiToken: newToken },
+        });
+        resultData.apiToken = updatedUser.apiToken;
         break;
       }
 

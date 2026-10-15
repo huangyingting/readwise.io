@@ -91,6 +91,31 @@ export default function AddToLibraryEmailPage() {
             </div>
           </form>
         </div>
+
+        {/* 1-Click Browser Bookmarklet */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-[#141821]">
+          <div className="text-sm font-bold text-gray-900 dark:text-white">
+            1-Click Browser Bookmarklet (Save Any Web Page Instantly)
+          </div>
+          <p className="mt-1 text-gray-500">
+            Drag the button below to your browser&apos;s Bookmarks Bar. Clicking it on any article or YouTube video will scrape and save it directly into your Readwise Reader Library!
+          </p>
+          <div className="mt-4 flex items-center gap-3">
+            <a
+              href={`javascript:(function(){window.location.href=window.location.origin+'/api/v3/save?url='+encodeURIComponent(window.location.href)+'&title='+encodeURIComponent(document.title);})();`}
+              onClick={(e) => {
+                e.preventDefault();
+                showToast('Drag this button to your browser Bookmarks Bar!');
+              }}
+              className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-bold text-white shadow hover:bg-amber-600"
+            >
+              🔖 Save to Readwise Reader
+            </a>
+            <span className="text-[11px] text-gray-400">
+              ← Drag to your Bookmarks Bar
+            </span>
+          </div>
+        </div>
       </div>
     </WorkspaceShell>
   );

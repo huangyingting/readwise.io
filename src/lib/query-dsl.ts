@@ -5,10 +5,20 @@ export interface ReaderAnnotation {
   paragraphIndex: number | null;
   selectedText: string;
   note: string;
-  color: 'yellow' | 'blue' | 'pink' | 'orange' | string;
+  color: 'yellow' | 'blue' | 'pink' | 'orange' | 'green' | string;
   tags: string[];
   boundingBox: any;
   timestampSeconds?: number | null;
+  isFavorite?: boolean;
+  isDiscarded?: boolean;
+  reviewCount?: number;
+  intervalDays?: number;
+  easeFactor?: number;
+  nextReviewAt?: string;
+  lastReviewedAt?: string | null;
+  flashcardQuestion?: string;
+  flashcardAnswer?: string;
+  clozeText?: string;
   createdAt: string;
 }
 
@@ -19,6 +29,9 @@ export interface ReaderDocument extends QueryableDocument {
   tts?: any;
   transcript?: any[];
   sourceSpecific?: any;
+  isPublic?: boolean;
+  reviewFrequency?: string;
+  isSupplemental?: boolean;
   annotations: ReaderAnnotation[];
 }
 

@@ -23,6 +23,10 @@ model User {
   onboardedAt         DateTime?
   subscriptionProduct String   @default("trial")
   trialDaysLeft       Int      @default(30)
+  apiToken            String   @default("rw_live_token_readwise_2026")
+  dailyReviewStreak   Int      @default(5)
+  lastReviewedAt      DateTime?
+  reviewsPerDay       Int      @default(8)
   settingsJson        String   @default("{}")
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -91,6 +95,9 @@ model Document {
   isShortlisted      Boolean   @default(false)
   isSeen             Boolean   @default(false)
   inFeed             Boolean   @default(false)
+  isPublic           Boolean   @default(false)
+  reviewFrequency    String    @default("normal")
+  isSupplemental     Boolean   @default(false)
   wordCount          Int       @default(0)
   readingMinutes     Int       @default(1)
   readingProgress    Float     @default(0)
@@ -125,10 +132,20 @@ model Annotation {
   note             String   @default("")
   color            String   @default("yellow")
   tagsJson         String   @default("[]")
-  boundingBoxJson  String   @default("{}")
-  timestampSeconds Float?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  boundingBoxJson   String    @default("{}")
+  timestampSeconds  Float?
+  isFavorite        Boolean   @default(false)
+  isDiscarded       Boolean   @default(false)
+  reviewCount       Int       @default(0)
+  intervalDays      Int       @default(1)
+  easeFactor        Float     @default(2.5)
+  nextReviewAt      DateTime  @default(now())
+  lastReviewedAt    DateTime?
+  flashcardQuestion String    @default("")
+  flashcardAnswer   String    @default("")
+  clozeText         String    @default("")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)

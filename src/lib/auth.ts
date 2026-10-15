@@ -1,4 +1,5 @@
-import { NextAuthOptions } from 'next-auth';
+import { NextAuthOptions, getServerSession } from 'next-auth';
+import { NextRequest } from 'next/server';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from './prisma';
@@ -128,3 +129,21 @@ export async function getOrCreateActiveUser(sessionEmail?: string | null) {
   await ensureUserSeeded(prisma, user.id, user.email);
   return user;
 }
+
+export async function resolveApiUser(req: NextRequest) {
+  const authHeader = req.headers.get('authorization') || '';
+  const tokenMatch = authHeader.match(/^(?:Token|Bearer)\s+(.+)$/i);
+  const queryToken = req.nextUrl.searchParams.get('token');
+  const rawToken = (tokenMatch ? tokenMatch[1] : queryToken || '').trim();
+
+  if (rawToken) {
+    const byToken = await prisma.user.findFirst({
+      where: { apiToken: rawToken },
+    });
+    if (byToken) return byToken;
+  }
+
+  const session = await getServerSession(authOptions);
+  return getOrCreateActiveUser(session?.user?.email);
+}
+

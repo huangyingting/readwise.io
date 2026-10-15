@@ -100,6 +100,10 @@ interface ReaderContextValue {
     customLibraryEmail: string;
     customFeedEmail: string;
     trialDaysRemaining: number;
+    apiToken?: string;
+    dailyReviewStreak?: number;
+    lastReviewedAt?: string | null;
+    reviewsPerDay?: number;
   };
   settings: typeof DEFAULT_USER_SETTINGS;
   homeSections: any[];
@@ -108,6 +112,7 @@ interface ReaderContextValue {
   tags: ReaderTag[];
   rssFeeds: ReaderRssFeed[];
   suggestedFeeds: any[];
+  supplementalCatalog: any[];
   ghostreaderPrompts: ReaderGhostreaderPrompt[];
   ghostreaderThreads: ReaderGhostreaderThread[];
   integrations: ReaderIntegration[];
@@ -421,6 +426,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
       tags: stateData.tags || [],
       rssFeeds: stateData.rssFeeds || [],
       suggestedFeeds: stateData.suggestedFeeds || [],
+      supplementalCatalog: stateData.supplementalCatalog || [],
       ghostreaderPrompts: stateData.ghostreaderPrompts || [],
       ghostreaderThreads: stateData.ghostreaderThreads || [],
       integrations: stateData.integrations || [],

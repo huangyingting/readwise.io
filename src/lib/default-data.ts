@@ -551,6 +551,13 @@ async function runEnsureUserSeeded(prisma: PrismaClient, userId: string, email: 
       selectedText: 'In Reader, you can navigate paragraphs using j and k (or the Down and Up arrow keys). Notice the subtle blue focus indicator in the left margin tracking your reading position.',
       note: 'Core UX insight: paragraph-level focus ring allows 100% keyboard highlighting without touching the mouse.',
       color: 'yellow',
+      isFavorite: true,
+      reviewCount: 2,
+      intervalDays: 3,
+      easeFactor: 2.6,
+      flashcardQuestion: 'How does Readwise Reader enable 100% mouse-free paragraph highlighting and triage?',
+      flashcardAnswer: 'By maintaining a paragraph-level focus cursor navigated with j/k and bound to single-key actions (h to highlight, n for margin note, t for tag, e to archive, z to undo).',
+      clozeText: 'In Reader, you can navigate paragraphs using {{c1::j and k}} and press {{c2::h}} to highlight the focused paragraph.',
       tagsJson: JSON.stringify(['important-architecture']),
     },
   });
@@ -931,4 +938,151 @@ async function runEnsureUserSeeded(prisma: PrismaClient, userId: string, email: 
       ]),
     },
   });
+
+  // 8. Seed additional Readwise Spaced Repetition Highlights & Active Recall Flashcards
+  await prisma.annotation.create({
+    data: {
+      userId,
+      documentId: `doc-pdf-${userId.slice(0, 6)}`,
+      type: 'highlight',
+      paragraphIndex: 2,
+      selectedText: 'We compute the dot products of the query with all keys, divide each by sqrt(d_k), and apply a softmax function to obtain the weights on the values: Attention(Q, K, V) = softmax(QK^T / sqrt(d_k))V.',
+      note: 'Why scale by 1/sqrt(d_k)? For large d_k, dot products grow large in magnitude, pushing softmax into regions with vanishingly small gradients.',
+      color: 'blue',
+      isFavorite: true,
+      reviewCount: 4,
+      intervalDays: 7,
+      easeFactor: 2.7,
+      flashcardQuestion: 'Why does Scaled Dot-Product Attention divide QK^T by sqrt(d_k) before applying softmax?',
+      flashcardAnswer: 'To prevent large dot-product magnitudes at high dimensions d_k from pushing the softmax function into saturation regions with vanishing gradients.',
+      clozeText: 'Scaled Dot-Product Attention computes {{c1::softmax(QK^T / sqrt(d_k))V}} to prevent {{c2::vanishing softmax gradients}} at high key dimensions.',
+      tagsJson: JSON.stringify(['ai-agents', 'important-architecture']),
+    },
+  });
+
+  await prisma.annotation.create({
+    data: {
+      userId,
+      documentId: `doc-epub-${userId.slice(0, 6)}`,
+      type: 'highlight',
+      paragraphIndex: 0,
+      selectedText: 'In local-first software, the primary copy of your data lives on your own device in a fast embedded database. The cloud server acts as a durable encrypted backup and delta synchronization relay rather than a bottleneck on every click.',
+      note: '.h1 Core Definition of Local-First Architecture',
+      color: 'green',
+      isFavorite: true,
+      reviewCount: 1,
+      intervalDays: 1,
+      easeFactor: 2.5,
+      flashcardQuestion: 'What role does the cloud server play in a local-first software architecture?',
+      flashcardAnswer: 'The primary data copy lives in an embedded client database (like SQLite WASM / IndexedDB), while the cloud acts as an asynchronous durable backup and delta sync relay.',
+      clozeText: 'In local-first software, the primary copy of your data lives on {{c1::your own device in a fast embedded database}}, while the cloud acts as a {{c2::durable backup and delta sync relay}}.',
+      tagsJson: JSON.stringify(['reverse-engineering', 'important-architecture']),
+    },
+  });
+
+  await prisma.annotation.create({
+    data: {
+      userId,
+      documentId: `doc-epub-${userId.slice(0, 6)}`,
+      type: 'highlight',
+      paragraphIndex: 3,
+      selectedText: 'Every user mutation emits a pair of patches: a forwardPatch that advances the state, and a reversePatch that restores the previous value. Pressing Z applies the reverse patch immediately for effortless Undo.',
+      note: 'RFC 6902 JSON Patch pairs enable deterministic client/server undo.',
+      color: 'yellow',
+      isFavorite: false,
+      reviewCount: 0,
+      intervalDays: 1,
+      easeFactor: 2.5,
+      flashcardQuestion: 'How does Readwise Reader implement instant deterministic Undo (z) across all mutations?',
+      flashcardAnswer: 'Every mutation event records both an RFC 6902 forwardPatch and reversePatch; pressing z applies the reversePatch to restore the prior state.',
+      clozeText: 'Every user mutation emits a {{c1::forwardPatch}} and a {{c2::reversePatch}} under RFC 6902 JSON Patch.',
+      tagsJson: JSON.stringify(['important-architecture']),
+    },
+  });
 }
+
+export const SUPPLEMENTAL_BOOKS_CATALOG = [
+  {
+    key: 'supp-atomic-habits',
+    title: 'Atomic Habits: An Easy & Proven Way to Build Good Habits & Break Bad Ones',
+    author: 'James Clear',
+    category: 'epub',
+    source: 'supplemental',
+    imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
+    highlights: [
+      {
+        text: 'You do not rise to the level of your goals. You fall to the level of your systems.',
+        note: 'Goals are about the results you want to achieve; systems are about the processes that lead to those results.',
+        question: 'According to James Clear, what determines your long-term progress more than your goals?',
+        answer: 'Your systems — you do not rise to the level of your goals; you fall to the level of your systems.',
+        cloze: 'You do not rise to the level of your {{c1::goals}}. You fall to the level of your {{c2::systems}}.',
+      },
+      {
+        text: 'Every action you take is a vote for the type of person you wish to become. No single instance will transform your beliefs, but as the votes build up, so does the evidence of your new identity.',
+        note: 'Identity-based habits vs. outcome-based habits.',
+        question: 'How do small daily habits reshape your self-identity over time?',
+        answer: 'Each action acts as a vote for the type of person you wish to become; accumulated votes build evidence of your new identity.',
+        cloze: 'Every action you take is a {{c1::vote}} for the type of {{c2::person you wish to become}}.',
+      },
+    ],
+  },
+  {
+    key: 'supp-ddia',
+    title: 'Designing Data-Intensive Applications',
+    author: 'Martin Kleppmann',
+    category: 'epub',
+    source: 'supplemental',
+    imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80',
+    highlights: [
+      {
+        text: 'Reliability means making systems work correctly, even when faults occur; scalability means having strategies for keeping performance good, even when load increases; maintainability means making life better for the engineering and operations teams who need to work with the system.',
+        note: 'The three foundational pillars of data-intensive systems.',
+        question: 'What are the three foundational concerns of data-intensive systems in DDIA?',
+        answer: 'Reliability (working correctly despite faults), Scalability (maintaining performance under load), and Maintainability (operability and evolvability for engineers).',
+        cloze: 'The three pillars of data-intensive systems are {{c1::Reliability}}, {{c2::Scalability}}, and {{c3::Maintainability}}.',
+      },
+      {
+        text: 'An append-only log of immutable events is the simplest and most reliable storage abstraction: derived views, search indexes, and caches can all be deterministically rebuilt by replaying the log.',
+        note: 'Event sourcing and change data capture (CDC).',
+        question: 'Why is an append-only immutable event log advantageous for derived views and caches?',
+        answer: 'Because any secondary index, materialized view, or cache can be deterministically reconstructed by replaying the immutable log.',
+        cloze: 'An {{c1::append-only log of immutable events}} allows derived views and indexes to be {{c2::deterministically rebuilt}}.',
+      },
+    ],
+  },
+  {
+    key: 'supp-thinking-fast-slow',
+    title: 'Thinking, Fast and Slow',
+    author: 'Daniel Kahneman',
+    category: 'epub',
+    source: 'supplemental',
+    imageUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop&q=80',
+    highlights: [
+      {
+        text: 'System 1 operates automatically and quickly, with little or no effort and no sense of voluntary control. System 2 allocates attention to the effortful mental activities that demand it, including complex computations.',
+        note: 'Dual-process theory of human judgment and decision-making.',
+        question: 'Contrast System 1 and System 2 thinking in Kahneman’s framework.',
+        answer: 'System 1 is fast, automatic, and effortless intuition; System 2 is slow, deliberate, and effortful analytical reasoning.',
+        cloze: '{{c1::System 1}} operates automatically and quickly, whereas {{c2::System 2}} allocates attention to effortful mental computations.',
+      },
+    ],
+  },
+  {
+    key: 'supp-how-to-take-smart-notes',
+    title: 'How to Take Smart Notes: One Simple Technique to Boost Writing, Learning and Thinking',
+    author: 'Sönke Ahrens',
+    category: 'epub',
+    source: 'supplemental',
+    imageUrl: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600&auto=format&fit=crop&q=80',
+    highlights: [
+      {
+        text: 'Never read without a pen in your hand. Writing is not the outcome of thinking; writing is the medium in which thinking takes place.',
+        note: 'Zettelkasten principle: translate what you read into your own words immediately.',
+        question: 'Why does Sönke Ahrens argue that note-taking should happen continuously while reading?',
+        answer: 'Because writing is not merely the record of finished thoughts — it is the medium in which rigorous thinking and synthesis actually occur.',
+        cloze: 'Writing is not the outcome of thinking; {{c1::writing is the medium in which thinking takes place}}.',
+      },
+    ],
+  },
+];
+

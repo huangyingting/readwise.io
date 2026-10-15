@@ -81,12 +81,48 @@ export async function POST(req: NextRequest) {
       };
 
       const renderedPrompt = renderJinjaTemplate(templateToRender, ctx);
-      const answer = executeGhostreaderPrompt(
+      let answer = executeGhostreaderPrompt(
         actionKey || 'ASK_DOCUMENT',
         renderedPrompt,
         ctx,
         question
       );
+
+      // Optional Live OpenAI / Compatible LLM execution when OPENAI_API_KEY is configured
+      const apiKey = body.apiKey || process.env.OPENAI_API_KEY;
+      if (apiKey) {
+        try {
+          const llmRes = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+              messages: [
+                {
+                  role: 'system',
+                  content:
+                    'You are Ghostreader, Readwise Reader’s built-in reading copilot. Respond concisely with high-signal insights.',
+                },
+                {
+                  role: 'user',
+                  content: question ? `${renderedPrompt}\n\nQuestion: ${question}` : renderedPrompt,
+                },
+              ],
+              temperature: 0.4,
+            }),
+          });
+          if (llmRes.ok) {
+            const llmData = await llmRes.json();
+            const content = llmData.choices?.[0]?.message?.content;
+            if (content) answer = content;
+          }
+        } catch {
+          // Fallback to deterministic local Jinja2 synthesis
+        }
+      }
 
       // If SUMMARIZE_DOCUMENT, also persist generatedSummary
       if (actionKey === 'SUMMARIZE_DOCUMENT' && documentId) {

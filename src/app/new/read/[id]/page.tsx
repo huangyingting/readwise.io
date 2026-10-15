@@ -118,14 +118,40 @@ function DocumentReaderInner() {
     }
   }, [doc?.id]);
 
-  // TTS simulated timer
+  // TTS simulated timer + Real Browser Web Speech API synthesis
   useEffect(() => {
-    if (!ttsPlaying) return;
+    if (!ttsPlaying) {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      return;
+    }
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && doc) {
+      window.speechSynthesis.cancel();
+      const plainText =
+        doc.title +
+        '. ' +
+        (doc.htmlContent || doc.summary || '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .slice(0, 3500);
+      const utterance = new SpeechSynthesisUtterance(plainText);
+      utterance.rate = ttsSpeed;
+      utterance.onend = () => setTtsPlaying(false);
+      window.speechSynthesis.speak(utterance);
+    }
+
     const timer = setInterval(() => {
       setTtsProgressSec((prev) => (prev >= 180 ? 0 : prev + 1));
     }, 1000);
-    return () => clearInterval(timer);
-  }, [ttsPlaying]);
+    return () => {
+      clearInterval(timer);
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [ttsPlaying, ttsSpeed, doc?.id]);
 
   // Parse paragraphs & headings from htmlContent
   const parsedParagraphs = useMemo(() => {
@@ -567,6 +593,23 @@ function DocumentReaderInner() {
             </button>
 
             {/* More Actions Menu */}
+            <button
+              title="Public Share Link (/share/[id])"
+              onClick={async () => {
+                await mutateState(
+                  'toggle-public-share',
+                  { documentId: doc.id, isPublic: true },
+                  'Enabled Public Annotated Share Link'
+                );
+                const shareUrl = `${window.location.origin}/share/${doc.id}`;
+                await navigator.clipboard.writeText(shareUrl).catch(() => {});
+                showToast(`Copied public share link: /share/${doc.id}`);
+              }}
+              className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-300"
+            >
+              Share
+            </button>
+
             <button
               title="Edit Metadata & Export (Shift+M)"
               onClick={() => setEditMetadataModalOpen(true)}

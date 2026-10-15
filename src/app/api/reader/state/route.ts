@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, getOrCreateActiveUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { DEFAULT_USER_SETTINGS, SUGGESTED_FEEDS, UserSettings } from '@/lib/default-data';
+import {
+  DEFAULT_USER_SETTINGS,
+  SUGGESTED_FEEDS,
+  SUPPLEMENTAL_BOOKS_CATALOG,
+  UserSettings,
+} from '@/lib/default-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,6 +107,16 @@ export async function GET(req: NextRequest) {
         tags: safeParseJson<string[]>(a.tagsJson, []),
         boundingBox: safeParseJson<any>(a.boundingBoxJson, {}),
         timestampSeconds: a.timestampSeconds,
+        isFavorite: a.isFavorite,
+        isDiscarded: a.isDiscarded,
+        reviewCount: a.reviewCount,
+        intervalDays: a.intervalDays,
+        easeFactor: a.easeFactor,
+        nextReviewAt: a.nextReviewAt ? a.nextReviewAt.toISOString() : new Date().toISOString(),
+        lastReviewedAt: a.lastReviewedAt ? a.lastReviewedAt.toISOString() : null,
+        flashcardQuestion: a.flashcardQuestion,
+        flashcardAnswer: a.flashcardAnswer,
+        clozeText: a.clozeText,
         createdAt: a.createdAt.toISOString(),
       }));
       const highlightTags = Array.from(new Set(annotations.flatMap((a) => a.tags)));
@@ -121,6 +136,9 @@ export async function GET(req: NextRequest) {
         isShortlisted: doc.isShortlisted,
         isSeen: doc.isSeen,
         inFeed: doc.inFeed,
+        isPublic: doc.isPublic,
+        reviewFrequency: doc.reviewFrequency,
+        isSupplemental: doc.isSupplemental,
         wordCount: doc.wordCount,
         readingMinutes: doc.readingMinutes,
         readingProgress: doc.readingProgress,
@@ -193,6 +211,10 @@ export async function GET(req: NextRequest) {
         customFeedEmail: user.customFeedEmail,
         onboardingStep: user.onboardingStep,
         onboardedAt: user.onboardedAt ? user.onboardedAt.toISOString() : null,
+        apiToken: user.apiToken,
+        dailyReviewStreak: user.dailyReviewStreak,
+        lastReviewedAt: user.lastReviewedAt ? user.lastReviewedAt.toISOString() : null,
+        reviewsPerDay: user.reviewsPerDay,
         subscription: {
           product: user.subscriptionProduct,
           trialDaysLeft: user.trialDaysLeft,
@@ -207,6 +229,7 @@ export async function GET(req: NextRequest) {
       tags: enrichedTags,
       rssFeeds,
       suggestedFeeds: SUGGESTED_FEEDS,
+      supplementalCatalog: SUPPLEMENTAL_BOOKS_CATALOG,
       ghostreaderPrompts,
       ghostreaderThreads: parsedThreads,
       integrations,

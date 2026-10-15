@@ -40,6 +40,15 @@ export default function FeedPage() {
       subtitle="High-volume feed triage separated from your curated Library"
       headerActions={
         <div className="flex items-center gap-2">
+          <button
+            onClick={() =>
+              mutateState('refresh-feeds', {}, 'Synced live RSS/Atom XML feeds')
+            }
+            className="flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/70 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 dark:border-blue-800/50 dark:bg-blue-950/30 dark:text-blue-300"
+          >
+            <Rss className="h-3.5 w-3.5" />
+            Sync Live Feeds
+          </button>
           {unseenDocs.length > 0 && (
             <button
               onClick={handleMarkAllSeen}

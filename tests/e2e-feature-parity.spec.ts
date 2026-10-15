@@ -190,4 +190,74 @@ test.describe('Readwise Reader Full Feature Parity E2E Suite', () => {
     await page.keyboard.press('Control+k');
     await expect(page.getByRole('dialog', { name: 'Command Palette' })).toBeVisible();
   });
+
+  test('7. Readwise.io Spaced Repetition (/daily-review, /highlights, /books, /mastery), Public Share (/share/[id]), Kindle Import & Official REST APIs v2/v3', async ({
+    page,
+    request,
+  }) => {
+    // 1. Official Readwise REST API v2 & v3 verification
+    const authRes = await request.get('/api/v2/auth');
+    expect(authRes.status()).toBe(204);
+
+    const postHlRes = await request.post('/api/v2/highlights', {
+      data: {
+        highlights: [
+          {
+            text: 'Spaced repetition turns passive reading into durable long-term memory.',
+            title: 'How to Take Smart Notes',
+            author: 'Sönke Ahrens',
+            note: '.qa What turns passive reading into durable memory?',
+            tags: ['zettelkasten', 'memory'],
+          },
+        ],
+      },
+    });
+    expect(postHlRes.ok()).toBeTruthy();
+
+    const getHlRes = await request.get('/api/v2/highlights');
+    expect(getHlRes.ok()).toBeTruthy();
+    const hlData = await getHlRes.json();
+    expect(hlData.count).toBeGreaterThanOrEqual(4);
+
+    const booksRes = await request.get('/api/v2/books');
+    expect(booksRes.ok()).toBeTruthy();
+    const booksData = await booksRes.json();
+    expect(booksData.count).toBeGreaterThanOrEqual(5);
+
+    const obsidianExportRes = await request.get('/api/v2/export?format=obsidian');
+    expect(obsidianExportRes.ok()).toBeTruthy();
+    const obsidianMd = await obsidianExportRes.text();
+    expect(obsidianMd).toContain('# Readwise Obsidian / Logseq Knowledge Vault Export');
+
+    const v3ListRes = await request.get('/api/v3/list');
+    expect(v3ListRes.ok()).toBeTruthy();
+    const v3List = await v3ListRes.json();
+    expect(v3List.count).toBeGreaterThanOrEqual(5);
+
+    // 2. Spaced Repetition Daily Review (/daily-review)
+    await page.goto('/daily-review');
+    await expect(page.locator('h1')).toContainText('Daily Review');
+    await expect(page.getByText(/Spaced Repetition \(SM-2\)/i)).toBeVisible();
+
+    // 3. All Highlights, Action Tags & Visual Quote Studio (/highlights)
+    await page.goto('/highlights');
+    await expect(page.locator('h1')).toContainText('All Highlights & Visual Quote Studio');
+    await expect(page.getByText(/Import Kindle Clippings/i)).toBeVisible();
+
+    // 4. Books & Supplemental Highlights Catalog (/books)
+    await page.goto('/books');
+    await expect(page.locator('h1')).toContainText('Books, Sources & Supplemental Highlights');
+    await page.getByRole('button', { name: /Supplemental Books/i }).click();
+    await expect(page.getByText('Atomic Habits').first()).toBeVisible();
+
+    // 5. Flashcard & Cloze Deletion Mastery Deck (/mastery)
+    await page.goto('/mastery');
+    await expect(page.locator('h1')).toContainText('Thematic Mastery & Active Recall Flashcards');
+
+    // 6. Public Annotated Document Share Page (/share/[id])
+    const firstDocId = v3List.results[0].id;
+    await page.goto(`/share/${firstDocId}`);
+    await expect(page.getByText(/Shared with/i)).toBeVisible();
+    await expect(page.getByText('Open in My Reader')).toBeVisible();
+  });
 });

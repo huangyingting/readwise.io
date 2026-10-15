@@ -65,6 +65,8 @@ export function GlobalModals() {
   const [urlCategory, setUrlCategory] = useState('');
   const [uploadFilename, setUploadFilename] = useState('');
   const [uploadPreview, setUploadPreview] = useState('');
+  const [uploadBase64, setUploadBase64] = useState('');
+  const [uploadTextContent, setUploadTextContent] = useState('');
   const [feedUrlInput, setFeedUrlInput] = useState('');
   const [feedTitleInput, setFeedTitleInput] = useState('');
   const [isSavingAdd, setIsSavingAdd] = useState(false);
@@ -118,6 +120,41 @@ export function GlobalModals() {
       label: 'Go to RSS Feed',
       shortcut: 'g f',
       action: () => router.push('/feed'),
+    },
+    {
+      id: 'nav-daily-review',
+      section: 'Readwise Spaced Repetition',
+      label: 'Start Daily Review (SM-2 Spaced Repetition)',
+      shortcut: 'g r',
+      action: () => router.push('/daily-review'),
+    },
+    {
+      id: 'nav-highlights',
+      section: 'Readwise Spaced Repetition',
+      label: 'All Highlights & Visual Quote Studio',
+      shortcut: 'g y',
+      action: () => router.push('/highlights'),
+    },
+    {
+      id: 'nav-books',
+      section: 'Readwise Spaced Repetition',
+      label: 'Books, Sources & Supplemental Highlights',
+      shortcut: 'g b',
+      action: () => router.push('/books'),
+    },
+    {
+      id: 'nav-mastery',
+      section: 'Readwise Spaced Repetition',
+      label: 'Flashcard & Cloze Deletion Mastery Deck',
+      shortcut: 'g m',
+      action: () => router.push('/mastery'),
+    },
+    {
+      id: 'act-sync-feeds',
+      section: 'Actions',
+      label: 'Sync All Subscribed RSS/Atom Feeds Live',
+      shortcut: 'Shift+R',
+      action: () => mutateState('refresh-feeds', {}, 'Synced live RSS/Atom feeds'),
     },
     {
       id: 'nav-ghostreader',
@@ -237,17 +274,33 @@ export function GlobalModals() {
           router.push(`/new/read/${res.document.id}`);
         }
       } else if (addModalDefaultTab === 'upload') {
+        const lowerName = (uploadFilename || '').toLowerCase();
+        if (lowerName.endsWith('.opml') && uploadTextContent) {
+          await mutateState(
+            'import-opml',
+            { opmlContent: uploadTextContent },
+            'Imported OPML RSS subscriptions',
+            false
+          );
+          setIsAddDocumentModalOpen(false);
+          router.push('/feed');
+          return;
+        }
         const res = await mutateState(
           'upload-document-file',
           {
             filename: uploadFilename.trim() || 'Uploaded-Research-Paper.pdf',
             contentPreview: uploadPreview.trim() || undefined,
+            base64Data: uploadBase64 || undefined,
+            textContent: uploadTextContent || undefined,
           },
-          'Uploaded file to Library Inbox',
+          'Uploaded & parsed file into Library Inbox',
           false
         );
         setUploadFilename('');
         setUploadPreview('');
+        setUploadBase64('');
+        setUploadTextContent('');
         setIsAddDocumentModalOpen(false);
         if (res?.document?.id) {
           router.push(`/new/read/${res.document.id}`);
@@ -484,15 +537,30 @@ export function GlobalModals() {
                 <>
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
-                      Choose Local PDF, EPUB, or HTML File
+                      Choose Local PDF, EPUB, HTML, Markdown, or OPML File
                     </label>
                     <input
                       type="file"
-                      accept=".pdf,.epub,.html,.txt,.md"
+                      accept=".pdf,.epub,.html,.htm,.txt,.md,.opml"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
                           setUploadFilename(file.name);
+                          // Read binary as base64 for PDF/EPUB parsing
+                          const b64Reader = new FileReader();
+                          b64Reader.onload = () => {
+                            const res = String(b64Reader.result || '');
+                            const commaIdx = res.indexOf(',');
+                            setUploadBase64(commaIdx >= 0 ? res.slice(commaIdx + 1) : res);
+                          };
+                          b64Reader.readAsDataURL(file);
+
+                          // Also read text for HTML/MD/TXT/OPML
+                          const txtReader = new FileReader();
+                          txtReader.onload = () => {
+                            setUploadTextContent(String(txtReader.result || ''));
+                          };
+                          txtReader.readAsText(file);
                         }
                       }}
                       className="mt-1.5 w-full rounded-xl border border-dashed border-gray-300 p-3 text-xs dark:border-gray-700"
