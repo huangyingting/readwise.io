@@ -1,4 +1,12 @@
 node_modules/
+.next/
+out/
+prisma/*.db
+prisma/*.db-journal
+test-results/
+playwright-report/
+.env
 data/chrome-profile/
 data/storage_state.json
 data/temp_account.json
+

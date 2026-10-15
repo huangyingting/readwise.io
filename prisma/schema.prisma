@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String   @id @default(cuid())
+  name                String?
+  firstName           String   @default("Alex")
+  lastName            String   @default("")
+  username            String   @unique @default(cuid())
+  email               String   @unique
+  emailVerified       DateTime?
+  passwordHash        String?
+  image               String?
+  customLibraryEmail  String   @default("alex@library.readwise.io")
+  customFeedEmail     String   @default("alex@feed.readwise.io")
+  onboardingStep      String   @default("/welcome")
+  onboardedAt         DateTime?
+  subscriptionProduct String   @default("trial")
+  trialDaysLeft       Int      @default(30)
+  settingsJson        String   @default("{}")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  accounts            Account[]
+  sessions            Session[]
+  documents           Document[]
+  annotations         Annotation[]
+  tags                Tag[]
+  filteredViews       FilteredView[]
+  rssFeeds            RssFeed[]
+  ghostreaderPrompts  GhostreaderPrompt[]
+  ghostreaderThreads  GhostreaderThread[]
+  integrations        IntegrationConnection[]
+  mutationEvents      StateMutationEvent[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Document {
+  id                 String    @id @default(cuid())
+  userId             String
+  url                String
+  title              String
+  author             String    @default("")
+  source             String    @default("web")
+  siteName           String    @default("")
+  domain             String    @default("")
+  faviconUrl         String    @default("")
+  imageUrl           String    @default("")
+  category           String    @default("article")
+  triageStatus       String    @default("new")
+  isShortlisted      Boolean   @default(false)
+  isSeen             Boolean   @default(false)
+  inFeed             Boolean   @default(false)
+  wordCount          Int       @default(0)
+  readingMinutes     Int       @default(1)
+  readingProgress    Float     @default(0)
+  summary            String    @default("")
+  generatedSummary   String    @default("")
+  documentNote       String    @default("")
+  htmlContent        String    @default("")
+  ttsJson            String    @default("{}")
+  transcriptJson     String    @default("[]")
+  sourceSpecificJson String    @default("{}")
+  tagsJson           String    @default("[]")
+  publishedDate      DateTime?
+  savedAt            DateTime  @default(now())
+  lastOpenedAt       DateTime?
+  lastStatusUpdate   DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  annotations Annotation[]
+
+  @@index([userId, triageStatus])
+  @@index([userId, category])
+}
+
+model Annotation {
+  id               String   @id @default(cuid())
+  userId           String
+  documentId       String
+  type             String   @default("highlight")
+  paragraphIndex   Int?
+  selectedText     String
+  note             String   @default("")
+  color            String   @default("yellow")
+  tagsJson         String   @default("[]")
+  boundingBoxJson  String   @default("{}")
+  timestampSeconds Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([userId])
+}
+
+model Tag {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String   @default("")
+  color       String   @default("#3b82f6")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+}
+
+model FilteredView {
+  id         String   @id @default(cuid())
+  userId     String
+  key        String
+  name       String
+  query      String
+  isPinned   Boolean  @default(false)
+  isBuiltIn  Boolean  @default(false)
+  sortBy     String   @default("date_moved")
+  layoutMode String   @default("list")
+  groupBy    String   @default("none")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+}
+
+model RssFeed {
+  id              String    @id @default(cuid())
+  userId          String
+  title           String
+  url             String
+  siteUrl         String    @default("")
+  faviconUrl      String    @default("")
+  description     String    @default("")
+  folder          String    @default("")
+  isMuted         Boolean   @default(false)
+  subscriberCount Int       @default(120)
+  lastFetchedAt   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, url])
+}
+
+model GhostreaderPrompt {
+  id             String   @id @default(cuid())
+  userId         String
+  promptType     String
+  actionKey      String
+  title          String
+  emoji          String   @default("👻")
+  description    String   @default("")
+  model          String   @default("GPT_6_LUNA")
+  systemPrompt   String   @default("You are a helpful reading assistant.")
+  template       String
+  isEnabled      Boolean  @default(true)
+  isCustomizable Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, actionKey])
+}
+
+model GhostreaderThread {
+  id           String   @id @default(cuid())
+  userId       String
+  documentId   String?
+  title        String
+  mode         String   @default("ask_library")
+  messagesJson String   @default("[]")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model IntegrationConnection {
+  id            String    @id @default(cuid())
+  userId        String
+  provider      String
+  name          String
+  category      String    @default("read_later")
+  connected     Boolean   @default(false)
+  accountName   String    @default("")
+  importedCount Int       @default(0)
+  lastSyncedAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+}
+
+model StateMutationEvent {
+  id               String   @id @default(cuid())
+  userId           String
+  correlationId    String
+  name             String
+  forwardPatchJson String   @default("[]")
+  reversePatchJson String   @default("[]")
+  itemsUpdatedJson String   @default("[]")
+  undone           Boolean  @default(false)
+  environment      String   @default("web")
+  timestamp        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, timestamp])
+}

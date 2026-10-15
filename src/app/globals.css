@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  --accent-color: #2563eb;
+}
+
+.dark {
+  --bg-primary: #0f1115;
+  --bg-secondary: #161920;
+  --bg-tertiary: #1f242d;
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --border-color: #262b36;
+  --accent-color: #3b82f6;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom subtle scrollbars matching Readwise Reader */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.6);
+}
+
+/* Reader Article Content Typography */
+.reader-article-content h2 {
+  font-size: 1.35em;
+  font-weight: 700;
+  margin-top: 1.75em;
+  margin-bottom: 0.65em;
+  letter-spacing: -0.015em;
+}
+
+.reader-article-content h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin-top: 1.4em;
+  margin-bottom: 0.5em;
+}
+
+.reader-article-content p {
+  margin-bottom: 1.15em;
+  padding: 0.35rem 0.6rem;
+  margin-left: -0.6rem;
+  margin-right: -0.6rem;
+  border-radius: 0.375rem;
+  border-left: 3px solid transparent;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.reader-article-content p.paragraph-focused {
+  background-color: rgba(59, 130, 246, 0.07);
+  border-left-color: #3b82f6;
+}
+
+.dark .reader-article-content p.paragraph-focused {
+  background-color: rgba(59, 130, 246, 0.14);
+  border-left-color: #60a5fa;
+}
+
+.reader-article-content blockquote {
+  border-left: 3px solid #3b82f6;
+  padding-left: 1rem;
+  margin: 1.25em 0;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.reader-article-content pre {
+  background-color: #111827;
+  color: #f3f4f6;
+  padding: 0.9rem 1.1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.85em;
+  margin: 1.2em 0;
+}
+
+.reader-article-content code {
+  background-color: rgba(156, 163, 175, 0.2);
+  padding: 0.12rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.88em;
+}
+
+.reader-article-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.reader-article-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1.15em;
+}
+
+.reader-article-content li {
+  margin-bottom: 0.4em;
+}
+
+/* Highlight Swatch Styles */
+.rw-highlight-yellow {
+  background-color: rgba(253, 224, 71, 0.45);
+  border-bottom: 2px solid #eab308;
+}
+.dark .rw-highlight-yellow {
+  background-color: rgba(234, 179, 8, 0.28);
+  border-bottom: 2px solid #facc15;
+}
+
+.rw-highlight-blue {
+  background-color: rgba(147, 197, 253, 0.45);
+  border-bottom: 2px solid #3b82f6;
+}
+.dark .rw-highlight-blue {
+  background-color: rgba(59, 130, 246, 0.3);
+  border-bottom: 2px solid #60a5fa;
+}
+
+.rw-highlight-pink {
+  background-color: rgba(249, 168, 212, 0.45);
+  border-bottom: 2px solid #ec4899;
+}
+.dark .rw-highlight-pink {
+  background-color: rgba(236, 72, 153, 0.3);
+  border-bottom: 2px solid #f472b6;
+}
+
+.rw-highlight-orange {
+  background-color: rgba(253, 186, 116, 0.45);
+  border-bottom: 2px solid #f97316;
+}
+.dark .rw-highlight-orange {
+  background-color: rgba(249, 115, 22, 0.3);
+  border-bottom: 2px solid #fb923c;
+}
