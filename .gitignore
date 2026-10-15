@@ -1,0 +1,4 @@
+node_modules/
+data/chrome-profile/
+data/storage_state.json
+data/temp_account.json

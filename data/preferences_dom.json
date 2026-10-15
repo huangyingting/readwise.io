@@ -1,0 +1,346 @@
+{
+  "url": "https://read.readwise.io/preferences",
+  "text": "logo\nHide left panel\nAdd\nHome\n\nHome\n\nGhostreader\n\nGhostreader\n\ndown\nLibrary\n\nLibrary\n\nArticle\n\nArticles\n\nBook\n\nBooks\n\nEmail\n\nEmails\n\nPDF\n\nPDFs\n\nTwitter\n\nTweets\n\nVideo\n\nVideos\n\nLogo\n\nPodcasts\n\nTag\n\nTags\n\ndown\nFeed\n\nFeed\n\nRight\n\nManage feeds\n\nPinned\n\ndown\n\n⭐️ Shortlist\n\nRight\n\nManage views\n\nTrash\n\nTrash\n\nSearchNavIcon\n\nSearch\n\nsettings\n\nPreferences\n\nA\n\nAlex\n\nShow left panel\nPreferences\nProfile\nPreferences\nIntegrations\nGhostreader\nProduct Emails\nAdd to Library\nAdd to Feed\nResources\nInterface theme\nCustomize your interface color theme.\nLight theme\nDark theme\nSystem theme\nDefault view\nDefault view that opens when you launch Reader.\nLibrary\nAuto-advance\nProceed to the next document after taking an action, instead of returning to the list.\nHide focus indicator\nHide the colored bar marking the paragraph you're on. Some keyboard shortcuts will no longer work.\nLibrary configuration\nChange your desired workflow\nTriage\nSide panel visibility by default\nDetermines whether the side panels are hidden or visible when you first enter reading view.\nBoth panels visible\nKeyboard shortcuts\nPersonalize keyboard shortcuts to your own liking.\nCustomize\nOpen Reader links in desktop app\nYou must have the macOS app installed.\nHelp\nGetting started\nSupported document types\n\nYou can save documents of all kinds to Reader including web articles, RSS feeds, email newsletters, PDFs, EPUBs, and Twitter threads bringing all your reading into one place.\n\nExplore the icons in the left navigation sidebar (or use the keyboard shortcuts 2 through 7) to learn how to work with documents of each type.\n\nBrowser extensions\n\nInstall an extension to save articles to your Reader account and to optionally highlight the native web.\n\nChrome\nFirefox\nSafari\nMobile apps\n\nInstall the native mobile apps to read on and save documents from your Android and iOS devices.\n\nAndroid\nAndroid\nApple\niOS\nQuickly discover new documents\n\nWant to just jump into reading? You can browse all of the most highlighted documents across the Readwise community here, and easily save them in one click.\n\nLogo\nDiscover\nYou have 30 days left in your free trial. Upgrade your account ->\nHelp",
+  "elements": [
+    {
+      "tag": "DIV",
+      "role": "button",
+      "href": null,
+      "text": "logo Hide left panel Add Home Home Ghostreader Ghostreader down Library Library Article Articles Boo",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "/",
+      "text": "logo",
+      "x": 24,
+      "y": 25,
+      "w": 61,
+      "h": 20
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "Hide left panel",
+      "x": 161,
+      "y": 24,
+      "w": 20,
+      "h": 20
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "Add",
+      "x": 198,
+      "y": 24,
+      "w": 20,
+      "h": 20
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "down",
+      "x": 0,
+      "y": 134,
+      "w": 20,
+      "h": 20
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "down",
+      "x": 0,
+      "y": 422,
+      "w": 20,
+      "h": 20
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "Pinned down",
+      "x": 0,
+      "y": 458,
+      "w": 48,
+      "h": 28
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "Show left panel",
+      "x": 38,
+      "y": 22,
+      "w": 20,
+      "h": 20
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "/profile",
+      "text": "Profile",
+      "x": 253,
+      "y": 129,
+      "w": 190,
+      "h": 30
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "/preferences",
+      "text": "Preferences",
+      "x": 253,
+      "y": 159,
+      "w": 190,
+      "h": 30
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "/integrations",
+      "text": "Integrations",
+      "x": 253,
+      "y": 189,
+      "w": 190,
+      "h": 30
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "/ghostreader/preferences",
+      "text": "Ghostreader",
+      "x": 253,
+      "y": 219,
+      "w": 190,
+      "h": 30
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "/product-emails",
+      "text": "Product Emails",
+      "x": 253,
+      "y": 249,
+      "w": 190,
+      "h": 30
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "/add-to-library",
+      "text": "Add to Library",
+      "x": 253,
+      "y": 299,
+      "w": 190,
+      "h": 30
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "/add-to-feed",
+      "text": "Add to Feed",
+      "x": 253,
+      "y": 329,
+      "w": 190,
+      "h": 30
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "/resources",
+      "text": "Resources",
+      "x": 253,
+      "y": 359,
+      "w": 190,
+      "h": 30
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "Light theme",
+      "x": 1040,
+      "y": 129,
+      "w": 40,
+      "h": 40
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "Dark theme",
+      "x": 1089,
+      "y": 129,
+      "w": 40,
+      "h": 40
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "System theme",
+      "x": 1138,
+      "y": 129,
+      "w": 40,
+      "h": 40
+    },
+    {
+      "tag": "BUTTON",
+      "role": "switch",
+      "href": null,
+      "text": "",
+      "x": 1142,
+      "y": 283,
+      "w": 36,
+      "h": 20
+    },
+    {
+      "tag": "BUTTON",
+      "role": "switch",
+      "href": null,
+      "text": "",
+      "x": 1142,
+      "y": 358,
+      "w": 36,
+      "h": 20
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "Triage",
+      "x": 1135,
+      "y": 432,
+      "w": 42,
+      "h": 20
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "/preferences/shortcuts",
+      "text": "Customize",
+      "x": 1106,
+      "y": 599,
+      "w": 71,
+      "h": 17
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "https://read.readwise.io/resources",
+      "text": "macOS app",
+      "x": 569,
+      "y": 681,
+      "w": 76,
+      "h": 17
+    },
+    {
+      "tag": "BUTTON",
+      "role": "switch",
+      "href": null,
+      "text": "",
+      "x": 1142,
+      "y": 668,
+      "w": 36,
+      "h": 20
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "Help",
+      "x": 1400,
+      "y": 856,
+      "w": 24,
+      "h": 24
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "https://chrome.google.com/webstore/detail/jjhefcfhmnkfeepcpnilbbkaadhngkbi",
+      "text": "Chrome",
+      "x": 1463,
+      "y": 361,
+      "w": 103,
+      "h": 32
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "https://addons.mozilla.org/en-US/firefox/addon/readwise-highlighter/",
+      "text": "Firefox",
+      "x": 1574,
+      "y": 361,
+      "w": 96,
+      "h": 32
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "https://apps.apple.com/app/save-to-reader/id1640236961",
+      "text": "Safari",
+      "x": 1670,
+      "y": 363,
+      "w": 89,
+      "h": 32
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "https://play.google.com/store/apps/details?id=com.readermobile",
+      "text": "Android Android",
+      "x": 1463,
+      "y": 499,
+      "w": 103,
+      "h": 32
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "https://apps.apple.com/us/app/readwise-reader/id1567599761",
+      "text": "Apple iOS",
+      "x": 1574,
+      "y": 499,
+      "w": 73,
+      "h": 32
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "Logo Discover",
+      "x": 1463,
+      "y": 675,
+      "w": 108,
+      "h": 32
+    },
+    {
+      "tag": "A",
+      "role": null,
+      "href": "https://readwise.io/pricing/reader",
+      "text": "Upgrade your account ->",
+      "x": 1469,
+      "y": 790,
+      "w": 318,
+      "h": 37
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "href": null,
+      "text": "Help",
+      "x": 1792,
+      "y": 866,
+      "w": 24,
+      "h": 24
+    }
+  ]
+}

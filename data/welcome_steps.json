@@ -1,0 +1,268 @@
+[
+  {
+    "step": 1,
+    "url": "https://read.readwise.io/welcome",
+    "text": "Logo\nWelcome to Readwise Reader\nImport your existing content\n\nImmediately populate your Reader account with all the articles you've previously saved to Instapaper.\n\nInstapaper\nNo account connected\nConnect\nPocket\nUpload your exported pocket.zip file\nUpload\nContinue →",
+    "buttons": [
+      {
+        "tag": "DIV",
+        "role": "button",
+        "type": null,
+        "text": "Logo\nWelcome to Readwise Reader\nImport your existing content\n\nImmediately populate your Reader account with all the arti",
+        "href": null
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Connect",
+        "href": null
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Upload",
+        "href": null
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Continue →",
+        "href": null
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "url": "https://read.readwise.io/welcome/extension",
+    "text": "Logo\nWelcome to Readwise Reader\nInstall the browser extension\n\nThe Reader browser extension saves articles to your Reader account and enables you to optionally highlight the open web.\n\nInstall\nInstall\nInstall\nInstall\nInstall\n← Previous step\nContinue →",
+    "buttons": [
+      {
+        "tag": "DIV",
+        "role": "button",
+        "type": null,
+        "text": "Logo\nWelcome to Readwise Reader\nInstall the browser extension\n\nThe Reader browser extension saves articles to your Reade",
+        "href": null
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "Install",
+        "href": "https://chrome.google.com/webstore/detail/readwise-highlighter/jjhefcfhmnkfeepcpnilbbkaadhngkbi"
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "Install",
+        "href": "https://addons.mozilla.org/en-US/firefox/addon/readwise-highlighter"
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "Install",
+        "href": "https://apps.apple.com/app/save-to-reader/id1640236961"
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "Install",
+        "href": "https://chrome.google.com/webstore/detail/readwise-highlighter/jjhefcfhmnkfeepcpnilbbkaadhngkbi"
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "Install",
+        "href": "https://chrome.google.com/webstore/detail/readwise-highlighter/jjhefcfhmnkfeepcpnilbbkaadhngkbi"
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "← Previous step",
+        "href": "/welcome"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Continue →",
+        "href": null
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "url": "https://read.readwise.io/welcome/mobile",
+    "text": "Logo\nWelcome to Readwise Reader\nGet the mobile app\n\nWe’ll email you a link to install the app on your Android or iOS device. Choose your platform and hit continue.\n\nAndroid\nEmail a link to the Reader app in the Google Play Store\niOS\nEmail a link to the Reader app in the Apple App Store\n← Previous step\nContinue →",
+    "buttons": [
+      {
+        "tag": "DIV",
+        "role": "button",
+        "type": null,
+        "text": "Logo\nWelcome to Readwise Reader\nGet the mobile app\n\nWe’ll email you a link to install the app on your Android or iOS dev",
+        "href": null
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Android\nEmail a link to the Reader app in the Google Play Store",
+        "href": null
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "iOS\nEmail a link to the Reader app in the Apple App Store",
+        "href": null
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "← Previous step",
+        "href": "/welcome/extension"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Continue →",
+        "href": null
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "url": "https://read.readwise.io/welcome/ready",
+    "text": "Logo\nWelcome to Readwise Reader\nYou're ready to read\n\nReader brings all your content into one place including blog posts, email newsletters, RSS feeds, Twitter threads, EPUBs, PDFs, and more. Explore the web app to learn how.\n\n← Previous step\nStart reading\nsuccess\nInstallation email sent",
+    "buttons": [
+      {
+        "tag": "DIV",
+        "role": "button",
+        "type": null,
+        "text": "Logo\nWelcome to Readwise Reader\nYou're ready to read\n\nReader brings all your content into one place including blog posts",
+        "href": null
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "← Previous step",
+        "href": "/welcome/mobile"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Start reading",
+        "href": null
+      }
+    ]
+  },
+  {
+    "step": 5,
+    "url": "https://read.readwise.io/welcome",
+    "text": "Logo\nWelcome to Readwise Reader\nImport your existing content\n\nImmediately populate your Reader account with all the articles you've previously saved to Instapaper.\n\nInstapaper\nNo account connected\nConnect\nPocket\nUpload your exported pocket.zip file\nUpload\nContinue →",
+    "buttons": [
+      {
+        "tag": "DIV",
+        "role": "button",
+        "type": null,
+        "text": "Logo\nWelcome to Readwise Reader\nImport your existing content\n\nImmediately populate your Reader account with all the arti",
+        "href": null
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Connect",
+        "href": null
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Upload",
+        "href": null
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Continue →",
+        "href": null
+      }
+    ]
+  },
+  {
+    "step": 6,
+    "url": "https://read.readwise.io/welcome/extension",
+    "text": "Logo\nWelcome to Readwise Reader\nInstall the browser extension\n\nThe Reader browser extension saves articles to your Reader account and enables you to optionally highlight the open web.\n\nInstall\nInstall\nInstall\nInstall\nInstall\n← Previous step\nContinue →",
+    "buttons": [
+      {
+        "tag": "DIV",
+        "role": "button",
+        "type": null,
+        "text": "Logo\nWelcome to Readwise Reader\nInstall the browser extension\n\nThe Reader browser extension saves articles to your Reade",
+        "href": null
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "Install",
+        "href": "https://chrome.google.com/webstore/detail/readwise-highlighter/jjhefcfhmnkfeepcpnilbbkaadhngkbi"
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "Install",
+        "href": "https://addons.mozilla.org/en-US/firefox/addon/readwise-highlighter"
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "Install",
+        "href": "https://apps.apple.com/app/save-to-reader/id1640236961"
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "Install",
+        "href": "https://chrome.google.com/webstore/detail/readwise-highlighter/jjhefcfhmnkfeepcpnilbbkaadhngkbi"
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "Install",
+        "href": "https://chrome.google.com/webstore/detail/readwise-highlighter/jjhefcfhmnkfeepcpnilbbkaadhngkbi"
+      },
+      {
+        "tag": "A",
+        "role": null,
+        "type": null,
+        "text": "← Previous step",
+        "href": "/welcome"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "type": "button",
+        "text": "Continue →",
+        "href": null
+      }
+    ]
+  }
+]

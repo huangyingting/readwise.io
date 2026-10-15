@@ -1,0 +1,42 @@
+{
+  "url": "https://read.readwise.io/welcome",
+  "title": "Onboarding | Readwise",
+  "text": "Logo\nWelcome to Readwise Reader\nImport your existing content\n\nImmediately populate your Reader account with all the articles you've previously saved to Instapaper.\n\nInstapaper\nNo account connected\nConnect\nPocket\nUpload your exported pocket.zip file\nUpload\nContinue →",
+  "elements": [
+    {
+      "tag": "DIV",
+      "role": "button",
+      "type": null,
+      "text": "Logo\nWelcome to Readwise Reader\nImport your existing content\n\nImmediately populate your Reader account with all the arti",
+      "href": null
+    },
+    {
+      "tag": "H1",
+      "role": null,
+      "type": null,
+      "text": "Import your existing content",
+      "href": null
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "type": "button",
+      "text": "Connect",
+      "href": null
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "type": "button",
+      "text": "Upload",
+      "href": null
+    },
+    {
+      "tag": "BUTTON",
+      "role": null,
+      "type": "button",
+      "text": "Continue →",
+      "href": null
+    }
+  ]
+}
