@@ -5,12 +5,13 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json().catch(() => ({}));
     const expiresAt = body.expiresAt ? new Date(body.expiresAt) : undefined;
-    const grant = await rotateAccountInvitation(params.id, expiresAt);
+    const grant = await rotateAccountInvitation(id, expiresAt);
     const origin = req.nextUrl.origin;
     const acceptUrl = `${origin}/invite/${grant.token}`;
 

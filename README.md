@@ -1,7 +1,7 @@
 # Readwise Reader (`read.readwise.io`) — Full-Stack Next.js + NextAuth + Prisma Clone & 108-Screenshot Reverse-Engineering Archive
 
 This repository contains both:
-1. **A Full-Featured Readwise Reader Web Application** built with **Next.js 14 (App Router)**, **NextAuth**, **Prisma ORM** (**SQLite** for local development, **PostgreSQL** for production), **Tailwind CSS**, and a local-first state/sync engine with **100% feature parity** across all 33 routes.
+1. **A Full-Featured Readwise.io + Readwise Reader Web Application** built with **Next.js 16 (App Router, `next@16.4.2`)**, **React 19 (`19.3.1`)**, **NextAuth (`next-auth@4.24.15` + `@auth/prisma-adapter@2.11.3`)**, **Prisma ORM 7 (`prisma@7.10.1` with `@prisma/adapter-better-sqlite3` for SQLite and `@prisma/adapter-pg` for PostgreSQL)**, **Tailwind CSS**, and a local-first state/sync engine with **100% feature parity** across all 51 routes.
 2. **The Complete 108-Screenshot Reverse-Engineering Blueprint & Live API Dataset** captured from `https://read.readwise.io` via automated Playwright scripts.
 
 ---

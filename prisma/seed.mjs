@@ -1,7 +1,27 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rawUrl = process.env.DATABASE_URL || `file:${path.join(__dirname, 'dev.db')}`;
+const isPostgres =
+  process.env.DATABASE_PROVIDER === 'postgresql' ||
+  rawUrl.startsWith('postgres://') ||
+  rawUrl.startsWith('postgresql://');
+
+const sqliteUrl =
+  !isPostgres && rawUrl.startsWith('file:./')
+    ? `file:${path.join(__dirname, rawUrl.slice('file:./'.length))}`
+    : rawUrl;
+
+const prisma = new PrismaClient({
+  adapter: isPostgres
+    ? new PrismaPg(rawUrl)
+    : new PrismaBetterSqlite3({ url: sqliteUrl }),
+});
 
 async function main() {
   const passwordHash = await bcrypt.hash('Readwise2026!', 10);

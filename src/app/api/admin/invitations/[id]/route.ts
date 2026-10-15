@@ -5,10 +5,11 @@ export const dynamic = 'force-dynamic';
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const invitation = await revokeAccountInvitation(params.id);
+    const { id } = await params;
+    const invitation = await revokeAccountInvitation(id);
     return NextResponse.json({
       ok: true,
       invitation,

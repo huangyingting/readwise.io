@@ -7,10 +7,11 @@ export const dynamic = 'force-dynamic';
 export default async function PublicSharedDocumentPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const doc = await prisma.document.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       annotations: {
         orderBy: { createdAt: 'asc' },

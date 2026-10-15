@@ -20,7 +20,7 @@ if (fs.existsSync(schemaPath)) {
   const current = fs.readFileSync(schemaPath, 'utf8');
   const updated = current.replace(
     /datasource db \{[\s\S]*?\}/,
-    `datasource db {\n  provider = "${targetProvider}"\n  url      = env("DATABASE_URL")\n}`
+    `datasource db {\n  provider = "${targetProvider}"\n}`
   );
   if (current !== updated) {
     fs.writeFileSync(schemaPath, updated, 'utf8');
