@@ -139,6 +139,12 @@ export default function AdminInvitationsPage() {
               </div>
             </div>
           </div>
+          <a
+            href="/admin/bootstrap"
+            className="rounded-xl border border-blue-300 bg-white px-3.5 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50"
+          >
+            Bootstrap Admin
+          </a>
         </div>
 
         {/* Create Invitation Card */}
