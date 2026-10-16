@@ -39,41 +39,16 @@ export {
   validateAndClaimInvitation,
 };
 
-export async function getBootstrapStatus() {
-  const admins = await prisma.user.findMany({
-    where: { role: 'Admin' },
-    orderBy: { createdAt: 'asc' },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      firstName: true,
-      role: true,
-      createdAt: true,
-    },
-  });
-
-  return {
-    needsBootstrap: admins.length === 0,
-    adminCount: admins.length,
-    admins: admins.map((a) => ({
-      id: a.id,
-      email: a.email,
-      name: a.name || a.firstName || a.email,
-      role: a.role,
-      createdAt: a.createdAt.toISOString(),
-    })),
-    admissionMode: accountAdmissionMode(),
-    requiresSetupToken: admins.length > 0,
-  };
-}
-
+/**
+ * Provisions or promotes a root Administrator account from the deployment host CLI
+ * (`npm run bootstrap:admin -- --email <email> --password-stdin`).
+ *
+ * Security invariant: Never exposed via an HTTP API endpoint or public web route.
+ */
 export async function bootstrapAdmin(input: {
   email: string;
   password: string;
   name?: string | null;
-  setupToken?: string | null;
-  allowExistingAdmin?: boolean;
 }) {
   const email = normalizeAccountEmail(input.email);
   if (!isValidAccountEmail(input.email)) {
@@ -89,21 +64,6 @@ export async function bootstrapAdmin(input: {
       'invalid_password',
       'Administrator password must be between 8 and 128 characters.'
     );
-  }
-
-  const adminCount = await prisma.user.count({ where: { role: 'Admin' } });
-  const expectedToken =
-    process.env.BOOTSTRAP_ADMIN_TOKEN?.trim() || 'readwise-bootstrap-admin-2026';
-
-  if (adminCount > 0 && !input.allowExistingAdmin) {
-    const provided = input.setupToken?.trim() || '';
-    if (!provided || provided !== expectedToken) {
-      throw new AccountAdmissionError(
-        409,
-        'admin_exists',
-        'An administrator already exists. Sign in as an existing Admin or provide the Bootstrap Setup Token.'
-      );
-    }
   }
 
   const passwordHash = await bcrypt.hash(input.password, 10);
